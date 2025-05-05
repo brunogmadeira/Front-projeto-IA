@@ -11,15 +11,7 @@ const { width, height } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarSearch'>;
 
-export default function CarRegister() {
-    const [carBrand, setCarBrand] = useState('');
-    const [carModel, setCarModel] = useState('');
-    const [carYear, setCarYear] = useState('');
-    const [carColor, setCarColor] = useState('');
-    const [carPlate, setCarPlate] = useState('');
-    const [carRenavam, setCarRenavam] = useState('');
-    const [carKM, setCarKM] = useState('');
-    const [carOwner, setCarOwner] = useState('');
+export default function CarChanges() {
     
     const navigation = useNavigation<NavigationProp>();
 
@@ -30,69 +22,21 @@ export default function CarRegister() {
           <Ionicons name="arrow-back" size={26} color="#fff" />
         </BackButton>
       </TopBar>
-        <Title>Adicionar novo carro</Title>
-  
-  
-        <Input
-          placeholder="Marca do carro"
-          value={carBrand}
-          onChangeText={setCarBrand}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
+        <Title>Alterações do carro</Title>
   
         <Input
-          placeholder="Modelo do carro"
-          value={carModel}
-          onChangeText={setCarModel}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-  
-        <Input
-          placeholder="Ano"
-          value={carYear}
-          onChangeText={setCarYear}
-          keyboardType="number-pad"
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-  
-        <Input
-          placeholder="Cor"
-          value={carColor}
-          onChangeText={setCarColor}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-
-        <Input
-          placeholder="Placa"
-          value={carPlate}
-          onChangeText={setCarPlate}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-
-        <Input
-          placeholder="Renavam"
-          value={carRenavam}
-          onChangeText={setCarRenavam}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-
-        <Input
-          placeholder="KM"
-          value={carKM}
-          onChangeText={setCarKM}
+          placeholder="Orçamento"
           keyboardType="decimal-pad"
           placeholderTextColor="rgba(0, 0, 0, 0.5)"
         />
-  
-        <Input
-          placeholder="Cliente"
-          value={carOwner}
-          onChangeText={setCarOwner}
+
+       <BigInput
+          placeholder="Informações"
           placeholderTextColor="rgba(0, 0, 0, 0.5)"
         />
   
        <BottomBar>
-        <ButtonText>Adicionar</ButtonText>
+        <ButtonText>Alterar</ButtonText>
        </BottomBar>
   
         <StatusBar style="auto" />
@@ -116,6 +60,18 @@ export default function CarRegister() {
     margin-bottom: ${height * 0.02}px;
     font-weight: bold;
   `;
+
+  const BigInput = styled.TextInput.attrs({
+    multiline: true,
+    textAlignVertical: 'top',
+  })`
+    height: ${height * 0.20}px;
+    border: 2px solid #000;
+    margin-bottom: ${height * 0.02}px;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+  `;  
   
   const Input = styled.TextInput`
     height: ${height * 0.06}px;
@@ -124,15 +80,6 @@ export default function CarRegister() {
     padding: 0 10px;
     width: 100%;
     border-radius: 5px;
-  `;
-  
-  const Button = styled.TouchableOpacity`
-    background-color: #000;
-    padding: ${height * 0.02}px;
-    align-items: center;
-    border-radius: 5px;
-    width: 100%;
-    
   `;
   
   const ButtonText = styled.Text`

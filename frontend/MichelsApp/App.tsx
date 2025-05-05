@@ -10,6 +10,8 @@ import CarSearch from './Pages/CarSearchPage';
 import CarRegister from './Pages/CarRegisterPage';
 import Profile from './Pages/ProfilePage';
 import CarProgress from './Pages/CarProgressPage';
+import DrawerNavigation from './Drawer/DrawerNavigation';
+import CarChanges from './Pages/CarChanges';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -19,6 +21,8 @@ export type RootStackParamList = {
   CarRegister: undefined;
   Profile: undefined;
   CarProgress: undefined;
+  Sidebar: undefined;
+  CarChanges: undefined;
 };
 
 const Stack = createNativeStackNavigator();
@@ -34,7 +38,8 @@ export default function App() {
         CarSearch: 'CarSearch',
         CarRegister: 'CarRegister',
         Profile: 'Profile',
-        CarProgress: 'CarProgress'
+        CarProgress: 'CarProgress',
+        CarChanges: 'CarChanges'
       },
     },
   };
@@ -48,6 +53,8 @@ export default function App() {
         <Stack.Screen name="CarRegister" component={CarRegister} />
         <Stack.Screen name="Profile" component={Profile} />
         <Stack.Screen name="CarProgress" component={CarProgress} />
+        <Stack.Screen name="Sidebar" component={DrawerNavigation} />
+        <Stack.Screen name="CarChanges" component={CarChanges} />
       </Stack.Navigator>
     </NavigationContainer>
   );

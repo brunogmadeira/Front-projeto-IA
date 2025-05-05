@@ -2,14 +2,19 @@ import React from 'react';
 import styled from 'styled-components/native';
 import { Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { DrawerNavigationProp } from '@react-navigation/drawer';
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window'); 
 
-export default function HomeScreen() {
+export default function Chatbot() {
+
+  const navigation = useNavigation<DrawerNavigationProp<any>>();
+  
   return (
     <Container>
       <TopBar>
-        <MenuButton>
+        <MenuButton onPress={() => navigation.toggleDrawer()}>
           <Ionicons name="menu" size={24} color="#fff" />
         </MenuButton>
       </TopBar>
