@@ -34,18 +34,18 @@ export default function Register() {
   //   }
   // };
   
-  const handleRegister = () => {
-    if (!fullName || !email || !phone || !password || !matchPassword) {
-      Alert.alert('Erro', 'Preencha todos os campos!');
-      return;
-    }
-    if (!passwordMatch(password, matchPassword)) {
-      Alert.alert('Erro', 'As senhas não conferem!');
-      return;
-    }
-    Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
-    navigation.navigate('Login');
-  };
+  // const handleRegister = () => {
+  //   if (!fullName || !email || !phone || !password || !matchPassword) {
+  //     Alert.alert('Erro', 'Preencha todos os campos!');
+  //     return;
+  //   }
+  //   if (!passwordMatch(password, matchPassword)) {
+  //     Alert.alert('Erro', 'As senhas não conferem!');
+  //     return;
+  //   }
+  //   Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
+  //   navigation.navigate('Login');
+  // };
 
   return (
     <Container>
@@ -90,7 +90,7 @@ export default function Register() {
         placeholderTextColor="rgba(0, 0, 0, 0.5)"
       />
 
-      <Button onPress={handleRegister}>
+      <Button onPress={navigation.navigate('Login')}>
         <ButtonText>Entrar</ButtonText>
       </Button>
 

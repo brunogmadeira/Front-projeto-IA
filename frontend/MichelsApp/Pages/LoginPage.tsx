@@ -18,7 +18,6 @@ export default function Login (){
   
   const handleLogin = () => {
     if (!email || !password) {
-      console.log('teste')
       Alert.alert('Erro', 'Preencha todos os campos!');
       return;
     }

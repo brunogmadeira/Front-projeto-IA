@@ -23,81 +23,92 @@ export default function CarRegister() {
     
     const navigation = useNavigation<NavigationProp>();
 
-    return (
-      <Container>
-      <TopBar>
-        <BackButton onPress={() => navigation.navigate('CarSearch')}>
-          <Ionicons name="arrow-back" size={26} color="#fff" />
-        </BackButton>
-      </TopBar>
-        <Title>Adicionar novo carro</Title>
-  
-  
-        <Input
-          placeholder="Marca do carro"
-          value={carBrand}
-          onChangeText={setCarBrand}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-  
-        <Input
-          placeholder="Modelo do carro"
-          value={carModel}
-          onChangeText={setCarModel}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-  
-        <Input
-          placeholder="Ano"
-          value={carYear}
-          onChangeText={setCarYear}
-          keyboardType="number-pad"
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-  
-        <Input
-          placeholder="Cor"
-          value={carColor}
-          onChangeText={setCarColor}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
+    const onClienteSearchPress = () => {
+      console.log('Busca de cliente (placeholder)');
+    };
 
-        <Input
-          placeholder="Placa"
-          value={carPlate}
-          onChangeText={setCarPlate}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
+return (
+  <Container>
+    <TopBar>
+      <BackButton onPress={() => navigation.navigate('CarSearch')}>
+        <Ionicons name="arrow-back" size={26} color="#fff" />
+      </BackButton>
+    </TopBar>
 
-        <Input
-          placeholder="Renavam"
-          value={carRenavam}
-          onChangeText={setCarRenavam}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
+    <Title>Adicionar novo carro</Title>
 
-        <Input
-          placeholder="KM"
-          value={carKM}
-          onChangeText={setCarKM}
-          keyboardType="decimal-pad"
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-  
-        <Input
-          placeholder="Cliente"
-          value={carOwner}
-          onChangeText={setCarOwner}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-  
-       <BottomBar>
-        <ButtonText>Adicionar</ButtonText>
-       </BottomBar>
-  
-        <StatusBar style="auto" />
-      </Container>
-    );
+    <InputFull
+      placeholder="Marca do carro"
+      value={carBrand}
+      onChangeText={setCarBrand}
+      placeholderTextColor="rgba(0, 0, 0, 0.5)"
+    />
+
+    <Row>
+      <InputHalf
+        placeholder="Modelo"
+        value={carModel}
+        onChangeText={setCarModel}
+        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+      />
+      <InputHalf
+        placeholder="Ano"
+        value={carYear}
+        onChangeText={setCarYear}
+        keyboardType="number-pad"
+        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+      />
+    </Row>
+
+    <Row>
+      <InputHalf
+        placeholder="Cor"
+        value={carColor}
+        onChangeText={setCarColor}
+        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+      />
+      <InputHalf
+        placeholder="Placa"
+        value={carPlate}
+        onChangeText={setCarPlate}
+        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+      />
+    </Row>
+
+    <Row>
+      <InputHalf
+        placeholder="Renavam"
+        value={carRenavam}
+        onChangeText={setCarRenavam}
+        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+      />
+      <InputHalf
+        placeholder="KM"
+        value={carKM}
+        onChangeText={setCarKM}
+        keyboardType="decimal-pad"
+        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+      />
+    </Row>
+
+    <Search>
+      <InputOwner
+        placeholder="Cliente"
+        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+      />
+      <SearchButton onPress={onClienteSearchPress}>
+        <Ionicons name="search" size={20} color="#000" />
+      </SearchButton>
+    </Search>
+
+
+    <BottomBar>
+      <ButtonText>Adicionar</ButtonText>
+    </BottomBar>
+
+    <StatusBar style="auto" />
+  </Container>
+);
   }
   // ao clicar em entrar, verificar se alguma info não ta errada pra ai sim permitir continuAR 
   
@@ -124,15 +135,6 @@ export default function CarRegister() {
     padding: 0 10px;
     width: 100%;
     border-radius: 5px;
-  `;
-  
-  const Button = styled.TouchableOpacity`
-    background-color: #000;
-    padding: ${height * 0.02}px;
-    align-items: center;
-    border-radius: 5px;
-    width: 100%;
-    
   `;
   
   const ButtonText = styled.Text`
@@ -166,3 +168,49 @@ const TopBar = styled.View`
 `;
 
 const BackButton = styled.TouchableOpacity``;
+
+const Row = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: ${height * 0.02}px;
+`;
+
+const InputFull = styled.TextInput`
+  height: ${height * 0.06}px;
+  border: 2px solid #000;
+  margin-bottom: ${height * 0.02}px;
+  padding: 0 10px;
+  width: 100%;
+  border-radius: 5px;
+`;
+
+const InputHalf = styled.TextInput`
+  height: ${height * 0.06}px;
+  border: 2px solid #000;
+  padding: 0 10px;
+  width: 48%;
+  border-radius: 5px;
+`;
+
+const Search = styled.View`
+  flex-direction: row;
+  align-items: center;
+  height: ${height * 0.06}px;
+  border: 2px solid #000;
+  margin-bottom: ${height * 0.02}px;
+  padding: 0 10px;
+  width: 100%;
+  border-radius: 5px;
+  background-color: #fff;
+`;
+
+const InputOwner = styled.TextInput`
+  flex: 1;
+  font-size: 16px;
+  color: #000;
+`;
+
+const SearchButton = styled.TouchableOpacity`
+  padding-left: 10px;
+`;
