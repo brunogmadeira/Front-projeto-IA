@@ -30,6 +30,7 @@ export default function Login (){
 
       if (response.status === 200) {
         await AsyncStorage.setItem('userToken', response.data.token);
+        await AsyncStorage.setItem('userId', response.data.id);
       navigation.navigate('Main', { screen: 'Chatbot' });
       } else {
         console.log('Erro ao atualizar carro.');

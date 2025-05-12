@@ -26,7 +26,8 @@ export default function CarSearch() {
   const onClienteSearchPress = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const userId =  1; // Pegando ID armazenado
+      const userId = await AsyncStorage.getItem('userId');
+
 
 
       if (!token || !userId) {
@@ -44,7 +45,6 @@ export default function CarSearch() {
 
       const data = response.data;
 
-      // Filtra se houver texto digitado
       const filtrados = searchText
         ? data.filter((carro: any) =>
             carro.modelo.toLowerCase().includes(searchText.toLowerCase()) ||

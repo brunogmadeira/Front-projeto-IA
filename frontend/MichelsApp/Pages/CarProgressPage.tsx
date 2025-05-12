@@ -43,7 +43,7 @@ export default function CarProgress(props: any) {
       });
 
     if (response.data && response.data.length > 0) {
-      setServicos(response.data); // Armazena todos os serviços
+      setServicos(response.data);
     } else {
       setError('Nenhum serviço encontrado');
     }

@@ -6,6 +6,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
@@ -13,6 +15,56 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarChanges'
 
 export default function CarChanges(props: any) {
     
+    const [orcamentoValor, setOrcamentoValor] = useState('');
+    const [info, setInfo] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async () => {
+      try {
+        setLoading(true);
+        
+        if (!orcamentoValor || !info) {
+          alert('Preencha todos os campos!');
+          return;
+        }
+
+        const token = await AsyncStorage.getItem('userToken');
+        const userId = await AsyncStorage.getItem('userId');
+        
+        if (!token || !userId) {
+          alert('Usuário não autenticado!');
+          return;
+        }
+
+        const payload = {
+          idcarro: idcar,
+          iduser: parseInt(userId),
+          valor: parseFloat(orcamentoValor),
+          info: info,
+          status: "Pendente", 
+          tipo: "Orçamento" 
+        };
+
+        const response = await axios.post('http://localhost:8080/api/servico/addneworc', payload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.status === 200) {
+          alert('Orçamento adicionado com sucesso!');
+          navigation.navigate('CarProgress', { idcar: idcar });
+        }
+      } catch (error) {
+        console.error('Erro ao adicionar orçamento:', error);
+        alert('Erro ao adicionar orçamento');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
     const navigation = useNavigation<NavigationProp>();
     const idcar = props?.route?.params.idcar;
     return (
@@ -24,26 +76,30 @@ export default function CarChanges(props: any) {
       </TopBar>
         <Title>Alterações do carro</Title>
   
-        <Input
-          placeholder="Orçamento"
-          keyboardType="decimal-pad"
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
+      <Input
+        placeholder="Orçamento"
+        keyboardType="decimal-pad"
+        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+        value={orcamentoValor}
+        onChangeText={setOrcamentoValor}
+      />
 
-       <BigInput
-          placeholder="Informações"
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-  
-       <BottomBar>
-        <ButtonText>Alterar</ButtonText>
-       </BottomBar>
+      <BigInput
+        placeholder="Informações"
+        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+        value={info}
+        onChangeText={setInfo}
+      />
+
+      <BottomBar onPress={handleSubmit}>
+        <ButtonText>{loading ? 'Enviando...' : 'Alterar'}</ButtonText>
+      </BottomBar>
   
         <StatusBar style="auto" />
       </Container>
     );
   }
-  // ao clicar em entrar, verificar se alguma info não ta errada pra ai sim permitir continuAR 
+ 
   
   const Container = styled.View`
     flex: 1;
@@ -89,7 +145,7 @@ export default function CarChanges(props: any) {
     font-weight : bold;
   `;
 
-  const BottomBar = styled.View`
+const BottomBar = styled.TouchableOpacity`
   position: absolute;
   bottom: 0;
   right: 0;
