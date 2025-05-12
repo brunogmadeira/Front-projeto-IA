@@ -7,6 +7,8 @@ import { RootStackParamList } from '../App';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import type { DrawerNavigationProp } from '@react-navigation/drawer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,33 +16,53 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarRegister
 
 export default function CarSearch() {
 
+  const [carros, setCarros] = useState([]);
+  const [searchText, setSearchText] = useState('');
+
   const navigation = useNavigation<NavigationProp>();
 
   const navigationDrawer = useNavigation<DrawerNavigationProp<any>>();
 
-  const onClienteSearchPress = () => {
-    console.log('Busca de cliente (placeholder)');
-  };
+  const onClienteSearchPress = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const userId =  1; // Pegando ID armazenado
 
-  const carros = [
-    {
-      id: '1',
-      nome: 'Ford Fiesta',
-      ano: '2015',
-      placa: 'ABC - 1D23',
-    },
-    {
-      id: '2',
-      nome: 'Ford Thunderbird',
-      ano: '1955',
-      placa: 'EFG - 4H56',
-    },
-  ];
+
+      if (!token || !userId) {
+        console.log('Token ou ID do usuário não encontrado');
+        return;
+      }
+
+      const response = await axios.get(`http://localhost:8080/api/carro/getall/bycliente/1`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log('Resposta da API:', response.data);
+
+      const data = response.data;
+
+      // Filtra se houver texto digitado
+      const filtrados = searchText
+        ? data.filter((carro: any) =>
+            carro.modelo.toLowerCase().includes(searchText.toLowerCase()) ||
+            carro.placa.toLowerCase().includes(searchText.toLowerCase()) ||
+            carro.ano.toString().includes(searchText)
+          )
+        : data;
+
+      setCarros(filtrados);
+
+    } catch (error) {
+      console.error('Erro ao buscar carros:', error);
+    }
+  };
   
 
   return (
-    <Container>
-      
+     <Container>
       <TopBar>
         <MenuButton onPress={() => navigationDrawer.toggleDrawer()}>
           <Ionicons name="menu" size={26} color="#fff" />
@@ -51,28 +73,30 @@ export default function CarSearch() {
       </TopBar>
 
       <StartScreen>
-      <Title>Buscar carros</Title>
+        <Title>Buscar carros</Title>
+
         <Search>
           <Input
-              placeholder="Modelo, placa ou ano"
-              placeholderTextColor="rgba(0, 0, 0, 0.5)"
-            />
+            placeholder="Modelo, placa ou ano"
+            placeholderTextColor="rgba(0, 0, 0, 0.5)"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
           <SearchButton onPress={onClienteSearchPress}>
             <Ionicons name="search" size={20} color="#000" />
-         </SearchButton>
+          </SearchButton>
         </Search>
 
         <CarList>
-        {carros.map((carro) => (
-        <CarItem key={carro.id} onPress={() => navigation.navigate('CarProgress')}>
-        <CarTitle>{carro.nome} - {carro.ano}</CarTitle>
-      <CarPlate>Placa: {carro.placa}</CarPlate>
-    </CarItem>
-  ))}
-</CarList>
- 
+          {carros.map((carro: any) => (
+            <CarItem key={carro.id} onPress={() => navigation.navigate('CarProgress')}>
+              <CarTitle>{carro.marca} - {carro.modelo} - {carro.ano}</CarTitle>
+              <CarPlate>Placa: {carro.placa}</CarPlate>
+            </CarItem>
+          ))}
+        </CarList>
       </StartScreen>
-   </Container>
+    </Container>
   );
 }
 
