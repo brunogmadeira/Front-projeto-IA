@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, Dimensions } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -23,6 +23,7 @@ export default function CarProgress(props: any) {
   const [orcamento, setOrcamento] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
+  const [tipoUsuario, setTipoUsuario] = useState<string | null>(null);
   const [servicos, setServicos] = React.useState<any[]>([]);
 
 
@@ -55,7 +56,18 @@ export default function CarProgress(props: any) {
     }
   };
 
+  const carregarTipoUsuario = async () => {
+    try {
+      const tipo = await AsyncStorage.getItem('userTipo');
+      setTipoUsuario(tipo);
+    } catch (error) {
+      console.error('Erro ao carregar tipo do usuário:', error);
+    }
+  };
+
   fetchOrcamento();
+  carregarTipoUsuario();
+
 }, [idcar]);
 
 
@@ -68,9 +80,10 @@ export default function CarProgress(props: any) {
           <Ionicons name="arrow-back" size={26} color="#fff" />
         </BackButton>
         
+        {tipoUsuario === '1' && (
         <AddButton onPress={() => navigation.navigate('CarChanges', { idcar: servicos[0]?.idcarro })}>
           <Ionicons name="add" size={26} color="#fff" />
-        </AddButton>
+        </AddButton>)}
       </TopBar>
 
       <TotalContainer>
@@ -115,10 +128,10 @@ export default function CarProgress(props: any) {
   </ModalOverlay>
 )} */}
 
-    
+   {tipoUsuario === '1' && ( 
 <BottomBar onPress={() => setShowModal(true)}>
   <ButtonText>Finalizar serviço</ButtonText>
-</BottomBar>
+</BottomBar>)}
 
 
       

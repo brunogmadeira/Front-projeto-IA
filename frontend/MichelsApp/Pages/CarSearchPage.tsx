@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
@@ -18,15 +18,30 @@ export default function CarSearch() {
 
   const [carros, setCarros] = useState([]);
   const [searchText, setSearchText] = useState('');
-
+  const [tipoUsuario, setTipoUsuario] = useState<string | null>(null);
   const navigation = useNavigation<NavigationProp>();
-
   const navigationDrawer = useNavigation<DrawerNavigationProp<any>>();
+  
+
+
+    useEffect(() => {
+      const carregarTipoUsuario = async () => {
+        try {
+          const tipo = await AsyncStorage.getItem('userTipo');
+          setTipoUsuario(tipo);
+        } catch (error) {
+          console.error('Erro ao carregar tipo do usuário:', error);
+        }
+      };
+
+      carregarTipoUsuario();
+    }, []);
 
   const onClienteSearchPress = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       const userId = await AsyncStorage.getItem('userId');
+      const tipo = await AsyncStorage.getItem('userTipo');
 
 
 
@@ -72,9 +87,11 @@ export default function CarSearch() {
         <MenuButton onPress={() => navigationDrawer.toggleDrawer()}>
           <Ionicons name="menu" size={26} color="#fff" />
         </MenuButton>
+      {tipoUsuario === '1' && (
         <AddButton onPress={() => navigation.navigate('CarRegister')}>
           <Ionicons name="add" size={26} color="#fff" />
         </AddButton>
+      )}
       </TopBar>
 
       <StartScreen>
