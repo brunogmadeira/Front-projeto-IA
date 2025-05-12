@@ -22,7 +22,7 @@ export default function Register() {
   const [matchPassword, setMatchPassword] = useState('');
 
 
-    const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp>();
 
   const novoUser = async () => {
     try {

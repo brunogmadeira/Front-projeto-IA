@@ -1,11 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, TouchableOpacity, Text, View, Modal } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -20,12 +22,72 @@ export default function CarRegister() {
     const [carRenavam, setCarRenavam] = useState('');
     const [carKM, setCarKM] = useState('');
     const [carOwner, setCarOwner] = useState('');
+    const [clientes, setClientes] = useState([]);
+    const [showClientList, setShowClientList] = useState(false);
+
     
     const navigation = useNavigation<NavigationProp>();
 
-    const onClienteSearchPress = () => {
-      console.log('Busca de cliente (placeholder)');
-    };
+    const novoCarro = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const response = await axios.post(`http://localhost:8080//api/carro/newcar`, {
+        modelo: carModel,
+        ano: carYear,     
+        marca: carBrand,
+        placa : carPlate,
+        iduser: carOwner
+      },
+      {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      });
+ 
+
+      if (response.status === 200 ){
+        console.log('Cadastro realizado com sucesso');
+        navigation.navigate('Login');
+      } else {
+        console.log('Erro');
+      }
+
+    } catch (error: any) {
+      window.alert(error.response.data);  
+    }
+    
+  };
+
+  const fetchClientes = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const response = await axios.get('http://localhost:8080/api/carro/getall/clients',
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+      setClientes(response.data);
+      setShowClientList(true);
+    } catch (error) {
+      console.log('Erro ao buscar clientes', error);
+    }
+    setShowClientList(true);
+  };
+
+  const selectCliente = (clienteNome: string) => {
+    setCarOwner(clienteNome);
+    setShowClientList(false);
+  };
+
+  const handleRegister = () => {
+    if (!carBrand || !carModel || !carPlate || !carColor || !carKM || !carRenavam || !carYear) {
+      window.alert('Informações faltantes');
+      return; //falta cor/km/renavam no backend
+    }
+    novoCarro(); 
+  };
 
 return (
   <Container>
@@ -93,24 +155,35 @@ return (
 
     <Search>
       <InputOwner
-        placeholder="Cliente"
-        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+      placeholder="Cliente"
+      placeholderTextColor="rgba(0, 0, 0, 0.5)"
+      value={carOwner}
+      onChangeText={setCarOwner}
       />
-      <SearchButton onPress={onClienteSearchPress}>
+      <SearchButton onPress={fetchClientes}>
         <Ionicons name="search" size={20} color="#000" />
       </SearchButton>
     </Search>
 
+    <Modal visible={showClientList} transparent animationType="fade">
+      <ModalOverlay onPress={() => setShowClientList(false)} />
+        <ModalContent>
+          {clientes.map((cliente: any, index) => (
+            <ClientItem key={index} onPress={() => selectCliente(cliente.nome)}>
+              <ClientText>{cliente.nome}</ClientText>
+            </ClientItem>
+          ))}
+        </ModalContent>
+    </Modal>
 
     <BottomBar>
-      <ButtonText>Adicionar</ButtonText>
+      <ButtonText onPress={handleRegister}>Adicionar</ButtonText>
     </BottomBar>
 
     <StatusBar style="auto" />
   </Container>
 );
   }
-  // ao clicar em entrar, verificar se alguma info não ta errada pra ai sim permitir continuAR 
   
   const Container = styled.View`
     flex: 1;
@@ -126,15 +199,6 @@ return (
     font-size: ${width * 0.08}px;
     margin-bottom: ${height * 0.02}px;
     font-weight: bold;
-  `;
-  
-  const Input = styled.TextInput`
-    height: ${height * 0.06}px;
-    border: 2px solid #000;
-    margin-bottom: ${height * 0.02}px;
-    padding: 0 10px;
-    width: 100%;
-    border-radius: 5px;
   `;
   
   const ButtonText = styled.Text`
@@ -213,4 +277,30 @@ const InputOwner = styled.TextInput`
 
 const SearchButton = styled.TouchableOpacity`
   padding-left: 10px;
+`;
+
+const ModalOverlay = styled.TouchableOpacity`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+
+const ModalContent = styled.View`
+  position: absolute;
+  top: 30%;
+  left: 10%;
+  right: 10%;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  elevation: 5;
+`;
+
+const ClientItem = styled.TouchableOpacity`
+  padding: 12px;
+  border-bottom-width: 1px;
+  border-bottom-color: #ccc;
+`;
+
+const ClientText = styled.Text`
+  font-size: 16px;
 `;

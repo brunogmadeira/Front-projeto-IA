@@ -11,6 +11,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
+//como pegar token
+//const token = await AsyncStorage.getItem('userToken');
+
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 export default function Login (){
@@ -27,15 +30,12 @@ export default function Login (){
 
       if (response.status === 200) {
         await AsyncStorage.setItem('userToken', response.data.token);
-        //como pegar token
-        //const token = await AsyncStorage.getItem('userToken');
         navigation.navigate('Chatbot')
       } else {
-        console.log('Erro', 'Erro ao atualizar carro.');
+        console.log('Erro ao atualizar carro.');
       }
-    } catch (error) {
-      console.error(error);
-      console.log('Erro', 'Não foi possível atualizar o carro.');
+    } catch (error: any) {
+       window.alert(error.response.data);  
     }
   };
   
