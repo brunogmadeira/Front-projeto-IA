@@ -4,13 +4,15 @@ import { Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { DrawerNavigationProp } from '@react-navigation/drawer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window'); 
 
 export default function Chatbot() {
 
   const navigation = useNavigation<DrawerNavigationProp<any>>();
-  
+
+
   return (
     <Container>
       <TopBar>

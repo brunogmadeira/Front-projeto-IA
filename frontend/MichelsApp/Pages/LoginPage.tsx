@@ -5,7 +5,9 @@ import { Dimensions} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Alert } from 'react-native';
+import { Alert } from 'react-native'
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -16,14 +18,35 @@ export default function Login (){
   const [password, setPassword] = useState('');
   const navigation = useNavigation<NavigationProp>();
   
-  const handleLogin = () => {
-    if (!email || !password) {
-      Alert.alert('Erro', 'Preencha todos os campos!');
-      return;
+  const login = async () => {
+    try {
+      const response = await axios.post(`http://localhost:8080/auth/login`, {
+        username: email,     
+        password: password
+      });
+
+      if (response.status === 200) {
+        await AsyncStorage.setItem('userToken', response.data.token);
+        //como pegar token
+        //const token = await AsyncStorage.getItem('userToken');
+        navigation.navigate('Chatbot')
+      } else {
+        console.log('Erro', 'Erro ao atualizar carro.');
+      }
+    } catch (error) {
+      console.error(error);
+      console.log('Erro', 'Não foi possível atualizar o carro.');
     }
-    Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
-    navigation.navigate('Chatbot');
   };
+  
+  // const handleLogin = () => {
+  //   if (!email || !password) {
+  //     Alert.alert('Erro', 'Preencha todos os campos!');
+  //     return;
+  //   }
+  //   Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
+  //   navigation.navigate('Chatbot');
+  // };
 
   return (
     <Container>
@@ -45,7 +68,7 @@ export default function Login (){
         placeholderTextColor='rgba(0, 0, 0, 0.5)'
       />
 
-      <Button onPress={handleLogin}>
+      <Button onPress={login}>
         <ButtonText>Entrar</ButtonText>
       </Button>
 

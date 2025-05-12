@@ -5,6 +5,10 @@ import { Dimensions, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import axios from 'axios';
+
+
+//Todo window.alert precisa ser modificado para Alert.alert
 
 const { width, height } = Dimensions.get('window');
 
@@ -17,36 +21,51 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [matchPassword, setMatchPassword] = useState('');
 
-  const navigation = useNavigation<NavigationProp>();
+
+    const navigation = useNavigation<NavigationProp>();
+
+  const novoUser = async () => {
+    try {
+      const response = await axios.post(`http://localhost:8080/user/novouser`, {
+        idusuario: null,
+        nome: fullName,     
+        email: email,
+        telefone_celular: phone,
+        senha: password,
+        tipo_usuario: 2,
+        token: '',
+      });
+
+
+      if (response.status === 200 ){
+        console.log('Cadastro realizado com sucesso');
+        navigation.navigate('Login');
+      } else {
+        console.log('Erro');
+      }
+
+    } catch (error: any) {
+      window.alert(error.response.data);  
+    }
+    
+  };
 
   const passwordMatch = (senha: string, confirmarSenha: string): boolean => {
     return senha === confirmarSenha;
   };
 
-  //EM NAVEGADOR NÃO VAI FUNCIONAR 
-  // const showAlert = (title: string, message: string) => {
-  //   if (typeof window !== 'undefined') {
-  //     // Web
-  //     window.alert(`${title}\n${message}`);
-  //   } else {
-  //     // Mobile
-  //     Alert.alert(title, message);
-  //   }
-  // };
+  const handleRegister = () => {
+    if (!fullName || !email || !phone || !password || !matchPassword) {
+      window.alert('Informações faltantes');
+      return;
+    }
+    if (!passwordMatch(password, matchPassword)) {
+      window.alert('As senhas não conferem!');
+      return;
+    }
+    novoUser(); 
+  };
   
-  // const handleRegister = () => {
-  //   if (!fullName || !email || !phone || !password || !matchPassword) {
-  //     Alert.alert('Erro', 'Preencha todos os campos!');
-  //     return;
-  //   }
-  //   if (!passwordMatch(password, matchPassword)) {
-  //     Alert.alert('Erro', 'As senhas não conferem!');
-  //     return;
-  //   }
-  //   Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
-  //   navigation.navigate('Login');
-  // };
-
   return (
     <Container>
       <Title>Cadastro</Title>
@@ -90,7 +109,7 @@ export default function Register() {
         placeholderTextColor="rgba(0, 0, 0, 0.5)"
       />
 
-      <Button onPress={navigation.navigate('Login')}>
+      <Button onPress={handleRegister}>
         <ButtonText>Entrar</ButtonText>
       </Button>
 
