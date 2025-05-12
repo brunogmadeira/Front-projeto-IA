@@ -22,9 +22,9 @@ export default function DrawerNavigator() {
         headerTintColor: '#fff',
       }}
     >
-      <Drawer.Screen name="Chatbot" component={Chatbot} />
-      <Drawer.Screen name="CarSearch" component={CarSearch} />
-      <Drawer.Screen name="Profile" component={Profile} />
+      <Drawer.Screen name="Chatbot" component={Chatbot} options={{ title: 'Atendimento' }}/>
+      <Drawer.Screen name="CarSearch" component={CarSearch} options={{ title: 'Buscar Carros' }}/>
+      <Drawer.Screen name="Profile" component={Profile} options={{ title: 'Perfil' }}/>
     </Drawer.Navigator>
   );
 }
