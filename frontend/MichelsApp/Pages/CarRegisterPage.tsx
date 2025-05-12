@@ -20,7 +20,8 @@ export default function CarRegister() {
     const [carPlate, setCarPlate] = useState('');
     const [carRenavam, setCarRenavam] = useState('');
     const [carKM, setCarKM] = useState('');
-    const [carOwner, setCarOwner] = useState('');
+    const [carOwnerId, setCarOwnerId] = useState('');
+    const [carOwnerName, setCarOwnerName] = useState('');
     const [clientes, setClientes] = useState([]);
     const [showClientList, setShowClientList] = useState(false);
 
@@ -33,18 +34,20 @@ export default function CarRegister() {
     const novoCarro = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.post(`http://localhost:8080//api/carro/newcar`, {
+      const response = await axios.post(`http://localhost:8080/api/carro/newcar`, {
         modelo: carModel,
         ano: carYear,     
         marca: carBrand,
         placa : carPlate,
-        iduser: carOwner
+        iduser: carOwnerId,
       },
       {
       headers: {
         Authorization: `Bearer ${token}`,
       },
       });
+
+      console.log(response.request)
  
 
       if (response.status === 200 ){
@@ -55,7 +58,7 @@ export default function CarRegister() {
       }
 
     } catch (error: any) {
-      window.alert(error.response.data);  
+      console.log('Erro ao cadastrar carro', error);
     }
     
   };
@@ -78,16 +81,17 @@ export default function CarRegister() {
     setShowClientList(true);
   };
 
-  const selectCliente = (clienteNome: string) => {
-    setCarOwner(clienteNome);
-    setShowClientList(false);
-  };
+const selectCliente = (clienteId: string, clienteNome: string) => {
+  setCarOwnerId(clienteId);
+  setCarOwnerName(clienteNome);
+  setShowClientList(false);
+};
 
   const handleRegister = () => {
-    if (!carBrand || !carModel || !carPlate || !carColor || !carKM || !carRenavam || !carYear) {
+    if (!carBrand || !carModel || !carPlate || !carColor || !carKM || !carRenavam || !carYear || !carOwnerId) {
       window.alert('Informações faltantes');
       return; //falta cor/km/renavam no backend
-    }
+    } 
     novoCarro(); 
   };
 
@@ -157,10 +161,10 @@ return (
 
     <Search>
       <InputOwner
-      placeholder="Cliente"
-      placeholderTextColor="rgba(0, 0, 0, 0.5)"
-      value={carOwner}
-      onChangeText={setCarOwner}
+        placeholder="Cliente"
+        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+        value={carOwnerName}
+        editable={false}
       />
       <SearchButton onPress={fetchClientes}>
         <Ionicons name="search" size={20} color="#000" />
@@ -168,10 +172,10 @@ return (
     </Search>
 
     <Modal visible={showClientList} transparent animationType="fade">
-      <ModalOverlay onPress={() => setShowClientList(false)} />
+      <ModalOverlay onPress={() => setShowClientList(false)} />s
         <ModalContent>
           {clientes.map((cliente: any, index) => (
-            <ClientItem key={index} onPress={() => selectCliente(cliente.nome)}>
+            <ClientItem key={index}  onPress={() => selectCliente(cliente.idusuario, cliente.nome)}>
               <ClientText>{cliente.nome}</ClientText>
             </ClientItem>
           ))}
