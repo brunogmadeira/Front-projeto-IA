@@ -11,7 +11,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarSearch'>;
 
 export default function CarRegister() {
     const [carBrand, setCarBrand] = useState('');
@@ -24,6 +23,9 @@ export default function CarRegister() {
     const [carOwner, setCarOwner] = useState('');
     const [clientes, setClientes] = useState([]);
     const [showClientList, setShowClientList] = useState(false);
+
+
+    type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarRegister'>;
 
     
     const navigation = useNavigation<NavigationProp>();
@@ -47,7 +49,7 @@ export default function CarRegister() {
 
       if (response.status === 200 ){
         console.log('Cadastro realizado com sucesso');
-        navigation.navigate('Login');
+      navigation.navigate('Main', { screen: 'CarSearch' });
       } else {
         console.log('Erro');
       }
@@ -92,7 +94,7 @@ export default function CarRegister() {
 return (
   <Container>
     <TopBar>
-      <BackButton onPress={() => navigation.navigate('CarSearch')}>
+  <BackButton onPress={() => navigation.navigate('Main', { screen: 'CarSearch' })}>
         <Ionicons name="arrow-back" size={26} color="#fff" />
       </BackButton>
     </TopBar>

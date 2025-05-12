@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarSearch'>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarProgress'>;
 
 export default function CarProgress() {
   const navigation = useNavigation<NavigationProp>();
@@ -21,7 +21,7 @@ export default function CarProgress() {
   return (
     <Container>
       <TopBar>
-        <BackButton onPress={() => navigation.navigate('CarSearch')}>
+        <BackButton onPress={() => navigation.navigate('Main', { screen: 'CarSearch' })}>
           <Ionicons name="arrow-back" size={26} color="#fff" />
         </BackButton>
         <AddButton onPress={() => navigation.navigate('CarChanges')}>
