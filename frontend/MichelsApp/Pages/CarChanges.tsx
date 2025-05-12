@@ -11,14 +11,14 @@ const { width, height } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarChanges'>;
 
-export default function CarChanges() {
+export default function CarChanges(props: any) {
     
     const navigation = useNavigation<NavigationProp>();
-
+    const idcar = props?.route?.params.idcar;
     return (
       <Container>
       <TopBar>
-        <BackButton onPress={() => navigation.navigate('CarProgress')}>
+        <BackButton onPress={() => navigation.navigate('CarProgress', { idcar: idcar })}>
           <Ionicons name="arrow-back" size={26} color="#fff" />
         </BackButton>
       </TopBar>

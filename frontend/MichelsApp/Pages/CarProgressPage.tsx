@@ -1,22 +1,65 @@
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions } from 'react-native';
+import { ActivityIndicator, Dimensions } from 'react-native';
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarProgress'>;
 
-export default function CarProgress() {
-  const navigation = useNavigation<NavigationProp>();
-  const [showModal, setShowModal] = React.useState(false);
 
-  const valorOrcamento = 'R$ 3.500,00';
-  const alteracoesTexto = 'Troca de peças e pintura lateral.';
+
+
+export default function CarProgress(props: any) {
+    const navigation = useNavigation<NavigationProp>();
+  const idcar = props?.route?.params.idcar;
+  const [showModal, setShowModal] = React.useState(false);
+  const [orcamento, setOrcamento] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState('');
+  const [servicos, setServicos] = React.useState<any[]>([]);
+
+
+
+  React.useEffect(() => {
+  const fetchOrcamento = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        setError('Usuário não autenticado');
+        return;
+      }
+
+      const response = await axios.get(`http://localhost:8080/api/servico/getbycar/${idcar}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+    if (response.data && response.data.length > 0) {
+      setServicos(response.data); // Armazena todos os serviços
+    } else {
+      setError('Nenhum serviço encontrado');
+    }
+    } catch (err) {
+      setError('Erro ao buscar dados do orçamento');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchOrcamento();
+}, [idcar]);
+
+
+
 
   return (
     <Container>
@@ -24,20 +67,31 @@ export default function CarProgress() {
         <BackButton onPress={() => navigation.navigate('Main', { screen: 'CarSearch' })}>
           <Ionicons name="arrow-back" size={26} color="#fff" />
         </BackButton>
-        <AddButton onPress={() => navigation.navigate('CarChanges')}>
+        
+        <AddButton onPress={() => navigation.navigate('CarChanges', { idcar: servicos[0]?.idcarro })}>
           <Ionicons name="add" size={26} color="#fff" />
         </AddButton>
       </TopBar>
 
-      <TitleArea>
-        <InfoText>ORÇAMENTO: {valorOrcamento}</InfoText>
-        <InfoText>ALTERAÇÕES: {alteracoesTexto}</InfoText>
-      </TitleArea>
+      <TotalContainer>
+        <TotalText>
+          Total de Serviços: {servicos.length}
+        </TotalText>
+        <TotalText>
+          Valor Total: R$ {
+            servicos.reduce((acc, curr) => acc + (curr.valor || 0), 0).toFixed(2)
+          }
+        </TotalText>
+      </TotalContainer>
 
       <TimelineList>
-        {[1, 2, 3, 4].map((item, index) => (
+        {servicos.map((servico: any, index: number) => (
           <TimelineCard key={index}>
-            <TimelineText>01/01/1900</TimelineText>
+            <TimelineText>
+              {servico.tipo} - R$ {servico.valor}
+            </TimelineText>
+            <TimelineText>Status: {servico.status}</TimelineText>
+            {servico.info && <TimelineText>Info: {servico.info}</TimelineText>}
           </TimelineCard>
         ))}
       </TimelineList>
@@ -182,4 +236,18 @@ const ModalButton = styled.TouchableOpacity<{ cancel?: boolean }>`
 const ModalButtonText = styled.Text`
   color: #fff;
   font-weight: bold;
+`;
+
+const TotalContainer = styled.View`
+  width: 100%;
+  padding: 20px;
+  margin-bottom: 15px;
+  background-color: #f5f5f5;
+`;
+
+const TotalText = styled.Text`
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  margin: 5px 0;
 `;

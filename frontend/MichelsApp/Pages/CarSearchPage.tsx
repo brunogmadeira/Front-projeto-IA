@@ -61,6 +61,11 @@ export default function CarSearch() {
   };
   
 
+  const handCarPress = (carroId: number) => {
+    navigation.navigate('CarProgress', { idcar: carroId });
+    return;
+  }
+
   return (
      <Container>
       <TopBar>
@@ -89,7 +94,7 @@ export default function CarSearch() {
 
         <CarList>
           {carros.map((carro: any) => (
-            <CarItem key={carro.id} onPress={() => navigation.navigate('CarProgress')}>
+            <CarItem key={carro.id} onPress={() => handCarPress(carro.id)}>
               <CarTitle>{carro.marca} - {carro.modelo} - {carro.ano}</CarTitle>
               <CarPlate>Placa: {carro.placa}</CarPlate>
             </CarItem>
