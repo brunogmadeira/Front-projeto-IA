@@ -23,7 +23,6 @@ export default function CarSearch() {
   const navigationDrawer = useNavigation<DrawerNavigationProp<any>>();
   
 
-
     useEffect(() => {
       const carregarTipoUsuario = async () => {
         try {
@@ -35,6 +34,7 @@ export default function CarSearch() {
       };
 
       carregarTipoUsuario();
+      onClienteSearchPress();
     }, []);
 
   const onClienteSearchPress = async () => {
@@ -42,21 +42,27 @@ export default function CarSearch() {
       const token = await AsyncStorage.getItem('userToken');
       const userId = await AsyncStorage.getItem('userId');
       const tipo = await AsyncStorage.getItem('userTipo');
-
-
-
       if (!token || !userId) {
         console.log('Token ou ID do usuário não encontrado');
         return;
       }
-
-      const response = await axios.get(`http://localhost:8080/api/carro/getall/bycliente/1`, {
+      let response;
+      
+      if (tipo === '2') {
+        response = await axios.get(`http://localhost:8080/api/carro/getall/bycliente/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
-
+      });}else{
+        response = await axios.get(`http://localhost:8080/api/carro/getall`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+      }
       console.log('Resposta da API:', response.data);
+
+
 
       const data = response.data;
 
