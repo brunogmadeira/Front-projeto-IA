@@ -1,11 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import styled from 'styled-components/native';
-import { Dimensions} from 'react-native';
+import { Dimensions, Alert, Image} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../App';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Alert } from 'react-native'
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -34,25 +33,24 @@ export default function Login (){
         await AsyncStorage.setItem('userTipo', response.data.tipo_usuario);
       navigation.navigate('Main', { screen: 'Chatbot' });
       } else {
-        console.log('Erro ao atualizar carro.');
+        console.log('Erro ao realizar login');
       }
     } catch (error: any) {
        window.alert(error.response.data);  
     }
   };
   
-  // const handleLogin = () => {
-  //   if (!email || !password) {
-  //     Alert.alert('Erro', 'Preencha todos os campos!');
-  //     return;
-  //   }
-  //   Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
-  //   navigation.navigate('Chatbot');
-  // };
+  const handleLogin = () => {
+    if (!email || !password) {
+      window.alert('Preencha todos os campos!');
+      return;
+    }
+    login();
+  };
 
   return (
     <Container>
-      <Title>Login</Title>
+      <ImageLogo source={require('../assets/michelslogocorrigido.jpeg')} resizeMode="contain" />
 
       <Input
         placeholder="E-mail"
@@ -70,7 +68,7 @@ export default function Login (){
         placeholderTextColor='rgba(0, 0, 0, 0.5)'
       />
 
-      <Button onPress={login}>
+      <Button onPress={handleLogin}>
         <ButtonText>Entrar</ButtonText>
       </Button>
 
@@ -137,4 +135,10 @@ const Button = styled.TouchableOpacity`
 const ButtonText = styled.Text`
   color: #fff;
   font-size: ${width * 0.05}px;
+`;
+
+const ImageLogo = styled.Image`
+  width: ${width * 0.8}px;
+  height: ${height * 0.3}px;
+  margin-bottom: ${height * 0.03}px;
 `;
