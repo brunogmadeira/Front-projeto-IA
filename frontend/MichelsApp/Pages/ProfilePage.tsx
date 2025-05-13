@@ -4,11 +4,48 @@ import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { DrawerNavigationProp } from '@react-navigation/drawer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
-export default function ProfileScreen() {
+export default function Profile() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [idUser, setIdUser] =  useState<string | null>(null);
   const navigationDrawer = useNavigation<DrawerNavigationProp<any>>();
+
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const idUser = await AsyncStorage.getItem('userId');
+        const response = await axios.get(`http://localhost:8080/api/carro/getuser/${idUser}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const user = response.data;
+
+        setName(user.nome);
+        setEmail(user.email);
+        setPhone(user.telefone_celular);
+
+      } catch (error) {
+        console.error('Erro ao buscar dados do usuário:', error);
+      }
+    };
+    const funcao = async () => {
+      setIdUser(idUser);
+    }
+
+      funcao();
+      fetchUserData();
+
+    }, []);
 
   return (
     <Container>
@@ -20,10 +57,9 @@ export default function ProfileScreen() {
 
       <Content>
         <Avatar />
-        <UserName>Fulano de tal</UserName>
-        <UserEmail>fulano@gmail.com</UserEmail>
-        <UserPhone>(99)999999999</UserPhone>
-        <UserDoc>CPF/CNPJ</UserDoc>
+        <UserName>{name}</UserName>
+        <UserEmail>{email}</UserEmail>
+        <UserPhone>{phone}</UserPhone>
       </Content>
 
       <EditButton>
