@@ -122,10 +122,6 @@ const UserPhone = styled.Text`
   margin-bottom: 10px;
 `;
 
-const UserDoc = styled.Text`
-  font-size: 16px;
-`;
-
 const EditButton = styled.TouchableOpacity`
   position: absolute;
   bottom: 0;

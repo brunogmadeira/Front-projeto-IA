@@ -11,7 +11,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
-
 export default function CarRegister() {
     const [carBrand, setCarBrand] = useState('');
     const [carModel, setCarModel] = useState('');
@@ -24,10 +23,9 @@ export default function CarRegister() {
     const [carOwnerName, setCarOwnerName] = useState('');
     const [clientes, setClientes] = useState([]);
     const [showClientList, setShowClientList] = useState(false);
-
+    const [searchText, setSearchText] = useState('');
 
     type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarRegister'>;
-
     
     const navigation = useNavigation<NavigationProp>();
 
@@ -40,9 +38,6 @@ export default function CarRegister() {
         marca: carBrand,
         placa : carPlate,
         iduser: carOwnerId,
-        renavam: carRenavam,
-        km: carKM,
-        cor: carColor,
       },
       {
       headers: {
@@ -52,7 +47,6 @@ export default function CarRegister() {
 
       console.log(response.request)
  
-
       if (response.status === 200 ){
         console.log('Cadastro realizado com sucesso');
       navigation.navigate('Main', { screen: 'CarSearch' });
@@ -63,7 +57,6 @@ export default function CarRegister() {
     } catch (error: any) {
       console.log('Erro ao cadastrar carro', error);
     }
-    
   };
 
   const fetchClientes = async () => {
@@ -93,10 +86,14 @@ const selectCliente = (clienteId: string, clienteNome: string) => {
   const handleRegister = () => {
     if (!carBrand || !carModel || !carPlate || !carColor || !carKM || !carRenavam || !carYear || !carOwnerId) {
       window.alert('Informações faltantes');
-      return; //falta cor/km/renavam no backend
+      return; 
     } 
     novoCarro(); 
   };
+
+  const filteredClientes = clientes.filter((cliente: any) =>
+  cliente.nome.toLowerCase().includes(searchText.toLowerCase())
+);
 
 return (
   <Container>
@@ -168,6 +165,7 @@ return (
         placeholderTextColor="rgba(0, 0, 0, 0.5)"
         value={carOwnerName}
         editable={false}
+        onChangeText={setCarOwnerName}
       />
       <SearchButton onPress={fetchClientes}>
         <Ionicons name="search" size={20} color="#000" />
@@ -175,15 +173,26 @@ return (
     </Search>
 
     <Modal visible={showClientList} transparent animationType="fade">
-      <ModalOverlay onPress={() => setShowClientList(false)} />s
-        <ModalContent>
-          {clientes.map((cliente: any, index) => (
-            <ClientItem key={index}  onPress={() => selectCliente(cliente.idusuario, cliente.nome)}>
-              <ClientText>{cliente.nome}</ClientText>
-            </ClientItem>
-          ))}
-        </ModalContent>
+      <ModalOverlay onPress={() => setShowClientList(false)} />
+      <ModalContent>
+        <InputFull
+          placeholder="Buscar cliente pelo nome..."
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholderTextColor="rgba(0, 0, 0, 0.5)"
+        />
+
+        {filteredClientes.map((cliente: any, index) => (
+          <ClientItem
+            key={index}
+            onPress={() => selectCliente(cliente.idusuario, cliente.nome)}
+          >
+            <ClientText>{cliente.nome}</ClientText>
+          </ClientItem>
+        ))}
+      </ModalContent>
     </Modal>
+
 
     <BottomBar>
       <ButtonText onPress={handleRegister}>Adicionar</ButtonText>
