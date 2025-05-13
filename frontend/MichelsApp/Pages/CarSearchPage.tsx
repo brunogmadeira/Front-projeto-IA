@@ -69,7 +69,8 @@ export default function CarSearch() {
       const filtrados = searchText
         ? data.filter((carro: any) =>
             carro.modelo.toLowerCase().includes(searchText.toLowerCase()) ||
-            carro.placa.toLowerCase().includes(searchText.toLowerCase()) ||
+            carro.placa.toLowerCase().includes(searchText.toLowerCase()) || 
+            carro.marca.toLowerCase().includes(searchText.toLowerCase()) || 
             carro.ano.toString().includes(searchText)
           )
         : data;
@@ -101,8 +102,12 @@ export default function CarSearch() {
       </TopBar>
 
       <StartScreen>
-        <Title>Buscar carros</Title>
-
+        {tipoUsuario === '1' && (
+          <Title>Buscar carros</Title>
+        )}
+        {tipoUsuario === '2' && (
+          <Title>Seus carros</Title>
+        )}
         <Search>
           <Input
             placeholder="Modelo, placa ou ano"

@@ -38,6 +38,9 @@ export default function CarRegister() {
         marca: carBrand,
         placa : carPlate,
         iduser: carOwnerId,
+        cor: carColor,
+        renavam: carRenavam,
+        km: carKM,
       },
       {
       headers: {
