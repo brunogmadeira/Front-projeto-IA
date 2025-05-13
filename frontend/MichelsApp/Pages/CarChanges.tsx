@@ -18,8 +18,11 @@ export default function CarChanges(props: any) {
     const [orcamentoValor, setOrcamentoValor] = useState('');
     const [info, setInfo] = useState('');
     const [loading, setLoading] = useState(false);
+    const navigation = useNavigation<NavigationProp>();
+    const idcar = props?.route?.params.idcar;
 
     const handleSubmit = async () => {
+      console.log(idcar);
       try {
         setLoading(true);
         
@@ -42,7 +45,8 @@ export default function CarChanges(props: any) {
           valor: parseFloat(orcamentoValor),
           info: info,
           status: "Pendente", 
-          tipo: "Orçamento" 
+          tipo: "Orçamento",
+          dataServico: new Date().toISOString(),
         };
 
         const response = await axios.post('http://localhost:8080/api/servico/addneworc', payload, {
@@ -65,8 +69,7 @@ export default function CarChanges(props: any) {
     };
 
 
-    const navigation = useNavigation<NavigationProp>();
-    const idcar = props?.route?.params.idcar;
+
     return (
       <Container>
       <TopBar>

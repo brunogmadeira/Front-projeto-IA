@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Dimensions } from 'react-native';
+import { ActivityIndicator, Dimensions, ScrollView } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -13,11 +13,8 @@ const { width, height } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarProgress'>;
 
-
-
-
 export default function CarProgress(props: any) {
-    const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<NavigationProp>();
   const idcar = props?.route?.params.idcar;
   const [showModal, setShowModal] = React.useState(false);
   const [orcamento, setOrcamento] = React.useState<any>(null);
@@ -25,11 +22,51 @@ export default function CarProgress(props: any) {
   const [error, setError] = React.useState('');
   const [tipoUsuario, setTipoUsuario] = useState<string | null>(null);
   const [servicos, setServicos] = React.useState<any[]>([]);
-
-
+  const [selectedServico, setSelectedServico] = React.useState<any>(null);
+  const [showServiceModal, setShowServiceModal] = React.useState(false);
 
   React.useEffect(() => {
-  const fetchOrcamento = async () => {
+    const fetchOrcamento = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (!token) {
+          setError('Usuário não autenticado');
+          return;
+        }
+
+        const response = await axios.get(`http://localhost:8080/api/servico/getbycar/${idcar}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.data && response.data.length > 0) {
+          setServicos(response.data);
+        } else {
+          setError('Nenhum serviço encontrado');
+        }
+      } catch (err) {
+        setError('Erro ao buscar dados do orçamento');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const carregarTipoUsuario = async () => {
+      try {
+        const tipo = await AsyncStorage.getItem('userTipo');
+        setTipoUsuario(tipo);
+      } catch (error) {
+        console.error('Erro ao carregar tipo do usuário:', error);
+      }
+    };
+
+    fetchOrcamento();
+    carregarTipoUsuario();
+  }, [idcar]);
+
+  const handleFinalizeServico = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) {
@@ -37,42 +74,33 @@ export default function CarProgress(props: any) {
         return;
       }
 
-      const response = await axios.get(`http://localhost:8080/api/servico/getbycar/${idcar}`, {
+      const updatedServico = {
+        ...selectedServico,
+        status: 'Finalizado'
+      };
+
+      await axios.put('http://localhost:8080/api/servico/attorc', updatedServico, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-    if (response.data && response.data.length > 0) {
-      setServicos(response.data);
-    } else {
-      setError('Nenhum serviço encontrado');
-    }
+      setServicos(prev => prev.map(s => s.id === updatedServico.id ? updatedServico : s));
+      setShowServiceModal(false);
     } catch (err) {
-      setError('Erro ao buscar dados do orçamento');
+      setError('Erro ao finalizar o serviço');
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const carregarTipoUsuario = async () => {
-    try {
-      const tipo = await AsyncStorage.getItem('userTipo');
-      setTipoUsuario(tipo);
-    } catch (error) {
-      console.error('Erro ao carregar tipo do usuário:', error);
-    }
-  };
-
-  fetchOrcamento();
-  carregarTipoUsuario();
-
-}, [idcar]);
-
-
-
-
+  const total = servicos.reduce((acc, curr) => acc + (curr.valor || 0), 0);
+  const emAberto = servicos.reduce((acc, curr) => 
+    curr.status !== 'Finalizado' ? acc + (curr.valor || 0) : acc, 0
+  );
+  const fechado = servicos.reduce((acc, curr) => 
+    curr.status === 'Finalizado' ? acc + (curr.valor || 0) : acc, 0
+  );
+  
   return (
     <Container>
       <TopBar>
@@ -81,64 +109,71 @@ export default function CarProgress(props: any) {
         </BackButton>
         
         {tipoUsuario === '1' && (
-        <AddButton onPress={() => navigation.navigate('CarChanges', { idcar: servicos[0]?.idcarro })}>
-          <Ionicons name="add" size={26} color="#fff" />
-        </AddButton>)}
+          <AddButton onPress={() => navigation.navigate('CarChanges', { idcar: idcar })}>
+            <Ionicons name="add" size={26} color="#fff" />
+          </AddButton>
+        )}
       </TopBar>
 
       <TotalContainer>
-        <TotalText>
-          Total de Serviços: {servicos.length}
-        </TotalText>
-        <TotalText>
-          Valor Total: R$ {
-            servicos.reduce((acc, curr) => acc + (curr.valor || 0), 0).toFixed(2)
-          }
-        </TotalText>
+        <TotalText>Total de Serviços: {servicos.length}</TotalText>
+        <TotalText>Valor Total: R$ {total.toFixed(2)}</TotalText>
+        <TotalText>Valor em Aberto: R$ {emAberto.toFixed(2)}</TotalText>
+        <TotalText>Valor Fechado: R$ {fechado.toFixed(2)}</TotalText>
       </TotalContainer>
 
       <TimelineList>
         {servicos.map((servico: any, index: number) => (
-          <TimelineCard key={index}>
+          <TimelineCard 
+            key={index} 
+            onPress={() => {
+              setSelectedServico(servico);
+              setShowServiceModal(true);
+            }}
+          >
             <TimelineText>
-              {servico.tipo} - R$ {servico.valor}
+              {servico.tipo} - Número {servico.id}
             </TimelineText>
-            <TimelineText>Status: {servico.status}</TimelineText>
-            {servico.info && <TimelineText>Info: {servico.info}</TimelineText>}
+            <TimelineText>Data: {new Date(servico.dataServico).toLocaleDateString('pt-BR')}
+</TimelineText>
           </TimelineCard>
         ))}
       </TimelineList>
 
-      {/* {showModal && (
-  <ModalOverlay>
-    <ModalBox>
-      <ModalText>Tem certeza que deseja finalizar o serviço?</ModalText>
-      <ModalActions>
-        <ModalButton onPress={() => {
-          setShowModal(false);
-          // Ação real de finalização do serviço viria aqui
-        }}>
-          <ModalButtonText>Sim</ModalButtonText>
-        </ModalButton>
-        <ModalButton onPress={() => setShowModal(false)} cancel>
-          <ModalButtonText>Cancelar</ModalButtonText>
-        </ModalButton>
-      </ModalActions>
-    </ModalBox>
-  </ModalOverlay>
-)} */}
+      {showServiceModal && selectedServico && (
+        <ModalOverlay>
+          <ModalBox>
+            <ScrollView contentContainerStyle={{ padding: 10 }}>
+              <ModalText>Tipo: {selectedServico.tipo}</ModalText>
+              <ModalText>Valor: R$ {Number(selectedServico.valor).toFixed(2)}</ModalText>
+              <ModalText>Status: {selectedServico.status}</ModalText>
+              {selectedServico.info && <ModalText>Informações: {selectedServico.info}</ModalText>}
+            </ScrollView>
+            
+            <ModalActions>
+              {tipoUsuario === '1' && selectedServico.status !== 'Finalizado' && (
+                <ModalButton onPress={handleFinalizeServico}>
+                  <ModalButtonText>Finalizar Serviço</ModalButtonText>
+                </ModalButton>
+              )}
+              <ModalButton cancel onPress={() => setShowServiceModal(false)}>
+                <ModalButtonText>Fechar</ModalButtonText>
+              </ModalButton>
+            </ModalActions>
+          </ModalBox>
+        </ModalOverlay>
+      )}
 
-   {tipoUsuario === '1' && ( 
-<BottomBar onPress={() => setShowModal(true)}>
-  <ButtonText>Finalizar serviço</ButtonText>
-</BottomBar>)}
-
-
-      
+{/*       {tipoUsuario === '1' && ( 
+        <BottomBar onPress={() => setShowModal(true)}>
+          <ButtonText>Finalizar serviço</ButtonText>
+        </BottomBar>
+      )} */}
     </Container>
   );
 }
 
+// Estilos atualizados
 const Container = styled.View`
   flex: 1;
   background-color: #fff;
@@ -164,16 +199,12 @@ const BackButton = styled.TouchableOpacity``;
 
 const AddButton = styled.TouchableOpacity``;
 
-const TitleArea = styled.View`
-  margin-bottom: ${height * 0.04}px;
-`;
-
 const TimelineList = styled.View`
   width: 100%;
   padding: 0 20px;
 `;
 
-const TimelineCard = styled.View`
+const TimelineCard = styled.TouchableOpacity`
   width: 100%;
   padding: 15px;
   border: 1px solid #000;
@@ -185,14 +216,7 @@ const TimelineText = styled.Text`
   font-size: 20px;
 `;
 
-const InfoText = styled.Text`
-  font-size: 21px;
-  font-weight: 500;
-  margin-bottom: 10px;
-  text-align: center;
-`;
-
-const BottomBar = styled.View`
+const BottomBar = styled.TouchableOpacity`
   position: absolute;
   bottom: 0;
   right: 0;
@@ -207,8 +231,7 @@ const BottomBar = styled.View`
 const ButtonText = styled.Text`
   color: #fff;
   font-size: ${width * 0.07}px;
-  positions: center;
-  font-weight : bold;
+  font-weight: bold;
 `;
 
 const ModalOverlay = styled.View`
@@ -227,22 +250,23 @@ const ModalBox = styled.View`
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
-  elevation: 5;
+  max-height: ${height * 0.7}px;
 `;
 
 const ModalText = styled.Text`
   font-size: 18px;
-  text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 `;
 
 const ModalActions = styled.View`
   flex-direction: row;
   justify-content: space-around;
+  margin-top: 15px;
 `;
 
 const ModalButton = styled.TouchableOpacity<{ cancel?: boolean }>`
   padding: 10px 20px;
+  background-color: ${(props: { cancel?: boolean }) => props.cancel ? '#999' : '#000'};
   border-radius: 5px;
 `;
 
@@ -262,5 +286,5 @@ const TotalText = styled.Text`
   font-size: 18px;
   font-weight: bold;
   text-align: center;
-  margin: 5px 0;
+  margin: 2px 0;
 `;
