@@ -66,32 +66,42 @@ export default function CarProgress(props: any) {
     carregarTipoUsuario();
   }, [idcar]);
 
-  const handleFinalizeServico = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        setError('Usuário não autenticado');
-        return;
-      }
+  const handleUpdateStatus = async () => {
+  try {
+    const token = await AsyncStorage.getItem('userToken');
+    if (!token) {
+      setError('Usuário não autenticado');
+      return;
+    }
 
-      const updatedServico = {
+    let updatedServico;
+    if (selectedServico.tipo === 'Orçamento' && selectedServico.status === 'Pendente') {
+      updatedServico = {
+        ...selectedServico,
+        status: 'Em andamento'
+      };
+    } else if (selectedServico.status === 'Em andamento') {
+      updatedServico = {
         ...selectedServico,
         status: 'Finalizado'
       };
-
-      await axios.put('http://localhost:8080/api/servico/attorc', updatedServico, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setServicos(prev => prev.map(s => s.id === updatedServico.id ? updatedServico : s));
-      setShowServiceModal(false);
-    } catch (err) {
-      setError('Erro ao finalizar o serviço');
-      console.error(err);
+    } else {
+      return; // Não faz nada se não estiver em estado válido
     }
-  };
+
+    await axios.put('http://localhost:8080/api/servico/attorc', updatedServico, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setServicos(prev => prev.map(s => s.id === updatedServico.id ? updatedServico : s));
+    setShowServiceModal(false);
+  } catch (err) {
+    setError('Erro ao atualizar o status');
+    console.error(err);
+  }
+};
 
   const total = servicos.reduce((acc, curr) => acc + (curr.valor || 0), 0);
   const emAberto = servicos.reduce((acc, curr) => 
@@ -132,7 +142,7 @@ export default function CarProgress(props: any) {
             }}
           >
             <TimelineText>
-              {servico.tipo} - Número {servico.id}
+              {servico.tipo} - Número {servico.id} 
             </TimelineText>
             <TimelineText>Data: {new Date(servico.dataServico).toLocaleDateString('pt-BR')}
 </TimelineText>
@@ -150,16 +160,27 @@ export default function CarProgress(props: any) {
               {selectedServico.info && <ModalText>Informações: {selectedServico.info}</ModalText>}
             </ScrollView>
             
-            <ModalActions>
-              {tipoUsuario === '1' && selectedServico.status !== 'Finalizado' && (
-                <ModalButton onPress={handleFinalizeServico}>
-                  <ModalButtonText>Finalizar Serviço</ModalButtonText>
-                </ModalButton>
-              )}
-              <ModalButton cancel onPress={() => setShowServiceModal(false)}>
-                <ModalButtonText>Fechar</ModalButtonText>
+      <ModalActions>
+        {tipoUsuario === '1' && (
+          <>
+            {(selectedServico.tipo === 'Orçamento' && selectedServico.status === 'Pendente') && (
+              <ModalButton onPress={handleUpdateStatus}>
+                <ModalButtonText>Iniciar Serviço</ModalButtonText>
               </ModalButton>
-            </ModalActions>
+            )}
+            
+            {(selectedServico.status === 'Em andamento') && (
+              <ModalButton onPress={handleUpdateStatus}>
+                <ModalButtonText>Finalizar Serviço</ModalButtonText>
+              </ModalButton>
+            )}
+          </>
+        )}
+        
+        <ModalButton cancel onPress={() => setShowServiceModal(false)}>
+          <ModalButtonText>Fechar</ModalButtonText>
+        </ModalButton>
+      </ModalActions>
           </ModalBox>
         </ModalOverlay>
       )}
