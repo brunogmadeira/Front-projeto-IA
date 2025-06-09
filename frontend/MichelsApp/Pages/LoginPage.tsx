@@ -36,13 +36,13 @@ export default function Login (){
         console.log('Erro ao realizar login');
       }
     } catch (error: any) {
-       window.alert(error.response.data);  
+       Alert.alert(error.response.data);  
     }
   };
   
   const handleLogin = () => {
     if (!email || !password) {
-      window.alert('Preencha todos os campos!');
+      Alert.alert('Preencha todos os campos!');
       return;
     }
     login();

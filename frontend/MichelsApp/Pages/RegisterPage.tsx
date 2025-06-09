@@ -45,7 +45,7 @@ export default function Register() {
       }
 
     } catch (error: any) {
-      window.alert(error.response.data);  
+      Alert.alert(error.response.data);  
     }
     
   };
@@ -56,11 +56,11 @@ export default function Register() {
 
   const handleRegister = () => {
     if (!fullName || !email || !phone || !password || !matchPassword) {
-      window.alert('Informações faltantes');
+      Alert.alert('Informações faltantes');
       return;
     }
     if (!passwordMatch(password, matchPassword)) {
-      window.alert('As senhas não conferem!');
+      Alert.alert('As senhas não conferem!');
       return;
     }
     novoUser(); 
