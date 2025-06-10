@@ -49,12 +49,12 @@ export default function CarSearch() {
       let response;
       
       if (tipo === '2') {
-        response = await axios.get(`http://localhost:8080/api/carro/getall/bycliente/${userId}`, {
+        response = await axios.get(`https://back-projeto-ia-production.up.railway.app/api/carro/getall/bycliente/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });}else{
-        response = await axios.get(`http://localhost:8080/api/carro/getall`, {
+        response = await axios.get(`https://back-projeto-ia-production.up.railway.app/api/carro/getall`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },

@@ -26,7 +26,7 @@ export default function Register() {
 
   const novoUser = async () => {
     try {
-      const response = await axios.post(`http://localhost:8080/user/novouser`, {
+      const response = await axios.post(`https://back-projeto-ia-production.up.railway.app/user/novouser`, {
         idusuario: null,
         nome: fullName,     
         email: email,

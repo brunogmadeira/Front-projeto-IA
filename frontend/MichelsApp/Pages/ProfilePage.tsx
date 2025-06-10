@@ -22,7 +22,7 @@ export default function Profile() {
       try {
         const token = await AsyncStorage.getItem('userToken');
         const idUser = await AsyncStorage.getItem('userId');
-        const response = await axios.get(`http://localhost:8080/api/carro/getuser/${idUser}`, {
+        const response = await axios.get(`https://back-projeto-ia-production.up.railway.app/api/carro/getuser/${idUser}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

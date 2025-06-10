@@ -49,7 +49,7 @@ export default function CarChanges(props: any) {
           dataServico: new Date().toISOString(),
         };
 
-        const response = await axios.post('http://localhost:8080/api/servico/addneworc', payload, {
+        const response = await axios.post('https://back-projeto-ia-production.up.railway.app/api/servico/addneworc', payload, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'

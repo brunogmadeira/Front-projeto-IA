@@ -32,7 +32,7 @@ export default function CarRegister() {
     const novoCarro = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.post(`http://localhost:8080/api/carro/newcar`, {
+      const response = await axios.post(`https://back-projeto-ia-production.up.railway.app/api/carro/newcar`, {
         modelo: carModel,
         ano: carYear,     
         marca: carBrand,
@@ -65,7 +65,7 @@ export default function CarRegister() {
   const fetchClientes = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.get('http://localhost:8080/api/carro/getall/clients',
+      const response = await axios.get('https://back-projeto-ia-production.up.railway.app/api/carro/getall/clients',
       {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -34,7 +34,7 @@ export default function CarProgress(props: any) {
           return;
         }
 
-        const response = await axios.get(`http://localhost:8080/api/servico/getbycar/${idcar}`, {
+        const response = await axios.get(`https://back-projeto-ia-production.up.railway.app/api/servico/getbycar/${idcar}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -89,7 +89,7 @@ export default function CarProgress(props: any) {
       return; // Não faz nada se não estiver em estado válido
     }
 
-    await axios.put('http://localhost:8080/api/servico/attorc', updatedServico, {
+    await axios.put('https://back-projeto-ia-production.up.railway.app/api/servico/attorc', updatedServico, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
