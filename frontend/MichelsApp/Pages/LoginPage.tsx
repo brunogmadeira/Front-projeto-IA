@@ -29,8 +29,8 @@ export default function Login (){
 
       if (response.status === 200) {
         await AsyncStorage.setItem('userToken', response.data.token);
-        await AsyncStorage.setItem('userId', response.data.id);
-        await AsyncStorage.setItem('userTipo', response.data.tipo_usuario);
+await AsyncStorage.setItem('userId', String(response.data.id));
+await AsyncStorage.setItem('userTipo', String(response.data.tipo_usuario));
       navigation.navigate('Main', { screen: 'Chatbot' });
       } else {
         console.log('Erro ao realizar login');

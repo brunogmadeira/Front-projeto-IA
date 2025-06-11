@@ -124,6 +124,7 @@ export default function CarProgress(props: any) {
           </AddButton>
         )}
       </TopBar>
+    <MainScrollView contentContainerStyle={{ paddingBottom: 5 }}>
 
       <TotalContainer>
         <TotalText>Total de Serviços: {servicos.length}</TotalText>
@@ -149,6 +150,8 @@ export default function CarProgress(props: any) {
           </TimelineCard>
         ))}
       </TimelineList>
+          </MainScrollView>
+
 
       {showServiceModal && selectedServico && (
         <ModalOverlay>
@@ -308,4 +311,9 @@ const TotalText = styled.Text`
   font-weight: bold;
   text-align: center;
   margin: 2px 0;
+`;
+
+const MainScrollView = styled.ScrollView`
+  flex: 1;
+  width: 100%;
 `;
