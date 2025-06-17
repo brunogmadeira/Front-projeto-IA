@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Dimensions, ScrollView } from 'react-native';
+import { ActivityIndicator, Dimensions, ScrollView, SafeAreaView, Platform, StatusBar as RNStatusBar } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -112,57 +112,54 @@ export default function CarProgress(props: any) {
   );
   
   return (
-    <Container>
-      <TopBar>
-        <BackButton onPress={() => navigation.navigate('Main', { screen: 'CarSearch' })}>
-          <Ionicons name="arrow-back" size={26} color="#fff" />
-        </BackButton>
-        
-        {tipoUsuario === '1' && (
-          <AddButton onPress={() => navigation.navigate('CarChanges', { idcar: idcar })}>
-            <Ionicons name="add" size={26} color="#fff" />
-          </AddButton>
-        )}
-      </TopBar>
-    <MainScrollView contentContainerStyle={{ paddingBottom: 5 }}>
-
-      <TotalContainer>
-        <TotalText>Total de Serviços: {servicos.length}</TotalText>
-        <TotalText>Valor Total: R$ {total.toFixed(2)}</TotalText>
-        <TotalText>Valor em Aberto: R$ {emAberto.toFixed(2)}</TotalText>
-        <TotalText>Valor Fechado: R$ {fechado.toFixed(2)}</TotalText>
-      </TotalContainer>
-
-      <TimelineList>
-        {servicos.map((servico: any, index: number) => (
-          <TimelineCard 
-            key={index} 
-            onPress={() => {
-              setSelectedServico(servico);
-              setShowServiceModal(true);
-            }}
-          >
-            <TimelineText>
-              {servico.tipo} - Número {servico.id} 
-            </TimelineText>
-            <TimelineText>Data: {new Date(servico.dataServico).toLocaleDateString('pt-BR')}
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff', paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0 }}>
+      <Container>
+        <TopBar>
+          <BackButton onPress={() => navigation.navigate('Main', { screen: 'CarSearch' })}>
+            <Ionicons name="arrow-back" size={26} color="#fff" />
+          </BackButton>
+          {tipoUsuario === '1' && (
+            <AddButton onPress={() => navigation.navigate('CarChanges', { idcar: idcar })}>
+              <Ionicons name="add" size={26} color="#fff" />
+            </AddButton>
+          )}
+        </TopBar>
+        <MainScrollView contentContainerStyle={{ paddingBottom: 5 }}>
+          <TotalContainer>
+            <TotalText>Total de Serviços: {servicos.length}</TotalText>
+            <TotalText>Valor Total: R$ {total.toFixed(2)}</TotalText>
+            <TotalText>Valor em Aberto: R$ {emAberto.toFixed(2)}</TotalText>
+            <TotalText>Valor Fechado: R$ {fechado.toFixed(2)}</TotalText>
+          </TotalContainer>
+          <TimelineList>
+            {servicos.map((servico: any, index: number) => (
+              <TimelineCard 
+                key={index} 
+                onPress={() => {
+                  setSelectedServico(servico);
+                  setShowServiceModal(true);
+                }}
+              >
+                <TimelineText>
+                  {servico.tipo} - Número {servico.id} 
+                </TimelineText>
+                <TimelineText>Data: {new Date(servico.dataServico).toLocaleDateString('pt-BR')}
 </TimelineText>
-          </TimelineCard>
-        ))}
-      </TimelineList>
-          </MainScrollView>
+              </TimelineCard>
+            ))}
+          </TimelineList>
+        </MainScrollView>
 
-
-      {showServiceModal && selectedServico && (
-        <ModalOverlay>
-          <ModalBox>
-            <ScrollView contentContainerStyle={{ padding: 10 }}>
-              <ModalText>Tipo: {selectedServico.tipo}</ModalText>
-              <ModalText>Valor: R$ {Number(selectedServico.valor).toFixed(2)}</ModalText>
-              <ModalText>Status: {selectedServico.status}</ModalText>
-              {selectedServico.info && <ModalText>Informações: {selectedServico.info}</ModalText>}
-            </ScrollView>
-            
+        {showServiceModal && selectedServico && (
+          <ModalOverlay>
+            <ModalBox>
+              <ScrollView contentContainerStyle={{ padding: 10 }}>
+                <ModalText>Tipo: {selectedServico.tipo}</ModalText>
+                <ModalText>Valor: R$ {Number(selectedServico.valor).toFixed(2)}</ModalText>
+                <ModalText>Status: {selectedServico.status}</ModalText>
+                {selectedServico.info && <ModalText>Informações: {selectedServico.info}</ModalText>}
+              </ScrollView>
+              
       <ModalActions>
         {tipoUsuario === '1' && (
           <>
@@ -184,16 +181,11 @@ export default function CarProgress(props: any) {
           <ModalButtonText>Fechar</ModalButtonText>
         </ModalButton>
       </ModalActions>
-          </ModalBox>
-        </ModalOverlay>
-      )}
-
-{/*       {tipoUsuario === '1' && ( 
-        <BottomBar onPress={() => setShowModal(true)}>
-          <ButtonText>Finalizar serviço</ButtonText>
-        </BottomBar>
-      )} */}
-    </Container>
+            </ModalBox>
+          </ModalOverlay>
+        )}
+      </Container>
+    </SafeAreaView>
   );
 }
 
@@ -202,17 +194,12 @@ const Container = styled.View`
   flex: 1;
   background-color: #fff;
   align-items: center;
-  padding-top: ${height * 0.1}px;
 `;
 
 const TopBar = styled.View`
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: ${height * 0.08}px;
   background-color: #000;
-  padding-left: 10px;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;

@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View, ScrollView, Platform, StatusBar as RNStatusBar } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -101,34 +101,38 @@ export default function CarSearch() {
       )}
       </TopBar>
 
-      <StartScreen>
-        {tipoUsuario === '1' && (
-          <Title>Buscar carros</Title>
-        )}
-        {tipoUsuario === '2' && (
-          <Title>Seus carros</Title>
-        )}
-        <Search>
-          <Input
-            placeholder="Modelo, placa ou ano"
-            placeholderTextColor="rgba(0, 0, 0, 0.5)"
-            value={searchText}
-            onChangeText={setSearchText}
-          />
-          <SearchButton onPress={onClienteSearchPress}>
-            <Ionicons name="search" size={20} color="#000" />
-          </SearchButton>
-        </Search>
+      <ContentContainer>
+        <ScrollView style={{ width: '100%' }}>
+          <StartScreen>
+            {tipoUsuario === '1' && (
+              <Title>Buscar carros</Title>
+            )}
+            {tipoUsuario === '2' && (
+              <Title>Seus carros</Title>
+            )}
+            <Search>
+              <Input
+                placeholder="Modelo, placa ou ano"
+                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                value={searchText}
+                onChangeText={setSearchText}
+              />
+              <SearchButton onPress={onClienteSearchPress}>
+                <Ionicons name="search" size={20} color="#000" />
+              </SearchButton>
+            </Search>
 
-        <CarList>
-          {carros.map((carro: any) => (
-            <CarItem key={carro.id} onPress={() => handCarPress(carro.id)}>
-              <CarTitle>{carro.marca} - {carro.modelo} - {carro.ano}</CarTitle>
-              <CarPlate>Placa: {carro.placa}</CarPlate>
-            </CarItem>
-          ))}
-        </CarList>
-      </StartScreen>
+            <CarList>
+              {carros.map((carro: any) => (
+                <CarItem key={carro.id} onPress={() => handCarPress(carro.id)}>
+                  <CarTitle>{carro.marca} - {carro.modelo} - {carro.ano}</CarTitle>
+                  <CarPlate>Placa: {carro.placa}</CarPlate>
+                </CarItem>
+              ))}
+            </CarList>
+          </StartScreen>
+        </ScrollView>
+      </ContentContainer>
     </Container>
   );
 }
@@ -136,30 +140,18 @@ export default function CarSearch() {
 const Container = styled.View`
   flex: 1;
   background-color: #fff;
-  align-items: center;
-  justify-content: top;
-  padding: 20px;
   width: 100%;
   height: 100%;
 `;
 
-const StartScreen = styled.View`
-  margin-top: ${height * 0.10}px;
-  align-items: center;
-  width: 100%;
-`;
-
-const Title = styled.Text`
-  font-size: ${width * 0.08}px;
-  font-weight: bold;
-  font-color: #000;
-  margin-bottom:${height * 0.02}px; 
-  width: 100%;
+const ContentContainer = styled.View`
+  flex: 1;
+  margin-top: ${Platform.OS === 'android' ? ((RNStatusBar.currentHeight || 0) + height * 0.08) : height * 0.08}px;
 `;
 
 const TopBar = styled.View`
   position: absolute;
-  top: 0;
+  top: ${Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0}px;
   left: 0;
   width: 100%;
   height: ${height * 0.08}px;
@@ -169,6 +161,21 @@ const TopBar = styled.View`
   justify-content: space-between;
   align-items: center;
   padding: 10px;
+  z-index: 1;
+`;
+
+const StartScreen = styled.View`
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+`;
+
+const Title = styled.Text`
+  font-size: ${width * 0.08}px;
+  font-weight: bold;
+  font-color: #000;
+  margin-bottom:${height * 0.02}px; 
+  width: 100%;
 `;
 
 const MenuButton = styled.TouchableOpacity``;

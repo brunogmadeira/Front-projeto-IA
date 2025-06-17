@@ -1,5 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View, SafeAreaView, Platform, StatusBar as RNStatusBar } from 'react-native';
+import { SafeAreaView as SafeAreaContextView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -71,35 +72,37 @@ export default function CarChanges(props: any) {
 
 
     return (
-      <Container>
-      <TopBar>
-        <BackButton onPress={() => navigation.navigate('CarProgress', { idcar: idcar })}>
-          <Ionicons name="arrow-back" size={26} color="#fff" />
-        </BackButton>
-      </TopBar>
-        <Title>Alterações do carro</Title>
-  
-      <Input
-        placeholder="Orçamento"
-        keyboardType="decimal-pad"
-        placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        value={orcamentoValor}
-        onChangeText={setOrcamentoValor}
-      />
-
-      <BigInput
-        placeholder="Informações"
-        placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        value={info}
-        onChangeText={setInfo}
-      />
-
-      <BottomBar onPress={handleSubmit}>
-        <ButtonText>{loading ? 'Enviando...' : 'Alterar'}</ButtonText>
-      </BottomBar>
-  
-        <StatusBar style="auto" />
-      </Container>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff', paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0 }}>
+        <Container>
+          <TopBar>
+            <BackButton onPress={() => navigation.navigate('CarProgress', { idcar: idcar })}>
+              <Ionicons name="arrow-back" size={26} color="#fff" />
+            </BackButton>
+          </TopBar>
+          <Content>
+            <Title>Alterações do carro</Title>
+            <Input
+              placeholder="Orçamento"
+              keyboardType="decimal-pad"
+              placeholderTextColor="rgba(0, 0, 0, 0.5)"
+              value={orcamentoValor}
+              onChangeText={setOrcamentoValor}
+            />
+            <BigInput
+              placeholder="Informações"
+              placeholderTextColor="rgba(0, 0, 0, 0.5)"
+              value={info}
+              onChangeText={setInfo}
+            />
+          </Content>
+          <SafeAreaContextView edges={['bottom']} style={{ backgroundColor: '#000' }}>
+            <BottomBar onPress={handleSubmit}>
+              <ButtonText>{loading ? 'Enviando...' : 'Alterar'}</ButtonText>
+            </BottomBar>
+          </SafeAreaContextView>
+          <StatusBar style="auto" />
+        </Container>
+      </SafeAreaView>
     );
   }
  
@@ -107,11 +110,16 @@ export default function CarChanges(props: any) {
   const Container = styled.View`
     flex: 1;
     background-color: #fff;
+    width: 100%;
+    height: 100%;
+  `;
+  
+  const Content = styled.View`
+    flex: 1;
     align-items: center;
     justify-content: center;
     padding: 20px;
     width: 100%;
-    height: 100%;
   `;
   
   const Title = styled.Text`
@@ -149,25 +157,19 @@ export default function CarChanges(props: any) {
   `;
 
 const BottomBar = styled.TouchableOpacity`
-  position: absolute;
-  bottom: 0;
-  right: 0;
   width: 100%;
-  height: ${height * 0.08}px;
+  height: 56px;
   background-color: #000;
   justify-content: center;
   align-items: center;
-  padding-right: 10px;
 `;
 
 const TopBar = styled.View`
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: ${height * 0.08}px;
+  height: 48px;
   background-color: #000;
-  justify-content: center;
+  flex-direction: row;
+  align-items: center;
   padding-left: 10px;
 `;
 

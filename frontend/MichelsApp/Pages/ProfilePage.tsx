@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Dimensions } from 'react-native';
+import { Dimensions, SafeAreaView, Platform, StatusBar as RNStatusBar } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -48,24 +48,24 @@ export default function Profile() {
     }, []);
 
   return (
-    <Container>
-      <TopBar>
-        <MenuButton onPress={() => navigationDrawer.toggleDrawer()}>
-          <Ionicons name="menu" size={26} color="#fff" />
-        </MenuButton>
-      </TopBar>
-
-      <Content>
-        <Avatar />
-        <UserName>{name}</UserName>
-        <UserEmail>{email}</UserEmail>
-        <UserPhone>{phone}</UserPhone>
-      </Content>
-
-      <EditButton>
-        <EditButtonText>Editar informações</EditButtonText>
-      </EditButton>
-    </Container>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff', paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0 }}>
+      <Container>
+        <TopBar>
+          <MenuButton onPress={() => navigationDrawer.toggleDrawer()}>
+            <Ionicons name="menu" size={26} color="#fff" />
+          </MenuButton>
+        </TopBar>
+        <Content>
+          <Avatar />
+          <UserName>{name}</UserName>
+          <UserEmail>{email}</UserEmail>
+          <UserPhone>{phone}</UserPhone>
+        </Content>
+        <EditButton>
+          <EditButtonText>Editar informações</EditButtonText>
+        </EditButton>
+      </Container>
+    </SafeAreaView>
   );
 }
 
@@ -77,9 +77,6 @@ const Container = styled.View`
 `;
 
 const TopBar = styled.View`
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: ${height * 0.08}px;
   background-color: #000;
@@ -123,8 +120,6 @@ const UserPhone = styled.Text`
 `;
 
 const EditButton = styled.TouchableOpacity`
-  position: absolute;
-  bottom: 0;
   width: 100%;
   background-color: #000;
   padding: 20px;
