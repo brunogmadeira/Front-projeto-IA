@@ -9,6 +9,7 @@ import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { TextInput } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,45 +22,57 @@ export default function CarChanges(props: any) {
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation<NavigationProp>();
     const idcar = props?.route?.params.idcar;
+    const iduser = props?.route?.params.iduser;
+
+    // Função para formatar valor em reais
+    const formatarParaReais = (valor: string) => {
+      // Remove tudo que não for número
+      let v = valor.replace(/\D/g, '');
+      if (!v) return '';
+      v = (parseInt(v, 10) / 100).toFixed(2) + '';
+      v = v.replace('.', ',');
+      v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+      return `R$ ${v}`;
+    };
+
+    // Handler para o campo de orçamento
+    const handleOrcamentoChange = (text: string) => {
+      // Permite apenas números
+      setOrcamentoValor(formatarParaReais(text));
+    };
 
     const handleSubmit = async () => {
-      console.log(idcar);
       try {
         setLoading(true);
-        
         if (!orcamentoValor || !info) {
           alert('Preencha todos os campos!');
           return;
         }
-
         const token = await AsyncStorage.getItem('userToken');
-        const userId = await AsyncStorage.getItem('userId');
-        
-        if (!token || !userId) {
+        if (!token || !iduser) {
           alert('Usuário não autenticado!');
           return;
         }
-
+        // Extrai o valor numérico do campo formatado
+        const valorNumerico = parseFloat(orcamentoValor.replace(/[^\d,]/g, '').replace(',', '.'));
         const payload = {
           idcarro: idcar,
-          iduser: parseInt(userId),
-          valor: parseFloat(orcamentoValor),
+          iduser: iduser,
+          valor: valorNumerico,
           info: info,
           status: "Pendente", 
           tipo: "Orçamento",
           dataServico: new Date().toISOString(),
         };
-
         const response = await axios.post('https://back-projeto-ia-production.up.railway.app/api/servico/addneworc', payload, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         });
-
         if (response.status === 200) {
           alert('Orçamento adicionado com sucesso!');
-          navigation.navigate('CarProgress', { idcar: idcar });
+          navigation.navigate('CarProgress', { idcar: idcar, iduser: iduser });
         }
       } catch (error) {
         console.error('Erro ao adicionar orçamento:', error);
@@ -75,7 +88,7 @@ export default function CarChanges(props: any) {
       <SafeAreaView style={{ flex: 1, backgroundColor: '#fff', paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0 }}>
         <Container>
           <TopBar>
-            <BackButton onPress={() => navigation.navigate('CarProgress', { idcar: idcar })}>
+            <BackButton onPress={() => navigation.navigate('CarProgress', { idcar: idcar, iduser: iduser })}>
               <Ionicons name="arrow-back" size={26} color="#fff" />
             </BackButton>
           </TopBar>
@@ -86,7 +99,8 @@ export default function CarChanges(props: any) {
               keyboardType="decimal-pad"
               placeholderTextColor="rgba(0, 0, 0, 0.5)"
               value={orcamentoValor}
-              onChangeText={setOrcamentoValor}
+              onChangeText={handleOrcamentoChange}
+              as={TextInput}
             />
             <BigInput
               placeholder="Informações"

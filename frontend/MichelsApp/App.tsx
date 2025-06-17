@@ -14,8 +14,8 @@ export type RootStackParamList = {
   Register: undefined;
   Main: { screen: keyof DrawerParamList } | undefined; // Modificação aqui
   CarRegister: undefined;
-  CarProgress: { idcar: number }; // Add this line
-  CarChanges: { idcar: number };
+  CarProgress: { idcar: number, iduser: number }; // Add this line
+  CarChanges: { idcar: number, iduser: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

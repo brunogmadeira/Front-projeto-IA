@@ -16,6 +16,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'CarProgress
 export default function CarProgress(props: any) {
   const navigation = useNavigation<NavigationProp>();
   const idcar = props?.route?.params.idcar;
+  const iduser = props?.route?.params.iduser;
   const [showModal, setShowModal] = React.useState(false);
   const [orcamento, setOrcamento] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
@@ -40,6 +41,8 @@ export default function CarProgress(props: any) {
           },
         });
 
+
+        console.log(response.data); 
         if (response.data && response.data.length > 0) {
           setServicos(response.data);
         } else {
@@ -119,7 +122,7 @@ export default function CarProgress(props: any) {
             <Ionicons name="arrow-back" size={26} color="#fff" />
           </BackButton>
           {tipoUsuario === '1' && (
-            <AddButton onPress={() => navigation.navigate('CarChanges', { idcar: idcar })}>
+            <AddButton onPress={() => navigation.navigate('CarChanges', { idcar: idcar, iduser: iduser })}>
               <Ionicons name="add" size={26} color="#fff" />
             </AddButton>
           )}

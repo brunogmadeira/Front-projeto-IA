@@ -102,6 +102,22 @@ const selectCliente = (clienteId: string, clienteNome: string) => {
   cliente.nome.toLowerCase().includes(searchText.toLowerCase())
 );
 
+// Funções de formatação
+const handleKMChange = (text: string) => {
+  // Apenas números
+  setCarKM(text.replace(/\D/g, ''));
+};
+
+const handleRenavamChange = (text: string) => {
+  // Apenas números, máximo 11 dígitos
+  setCarRenavam(text.replace(/\D/g, '').slice(0, 11));
+};
+
+const handleYearChange = (text: string) => {
+  // Apenas números, máximo 4 dígitos
+  setCarYear(text.replace(/\D/g, '').slice(0, 4));
+};
+
 return (
   <RNSafeAreaView style={{ flex: 1, backgroundColor: '#fff', paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0 }}>
     <Container>
@@ -120,16 +136,16 @@ return (
         />
         <Row>
           <InputHalf
-            placeholder="Modelo"
-            value={carModel}
-            onChangeText={setCarModel}
+            placeholder="Ano"
+            value={carYear}
+            onChangeText={handleYearChange}
+            keyboardType="number-pad"
             placeholderTextColor="rgba(0, 0, 0, 0.5)"
           />
           <InputHalf
-            placeholder="Ano"
-            value={carYear}
-            onChangeText={setCarYear}
-            keyboardType="number-pad"
+            placeholder="Modelo"
+            value={carModel}
+            onChangeText={setCarModel}
             placeholderTextColor="rgba(0, 0, 0, 0.5)"
           />
         </Row>
@@ -151,13 +167,13 @@ return (
           <InputHalf
             placeholder="Renavam"
             value={carRenavam}
-            onChangeText={setCarRenavam}
+            onChangeText={handleRenavamChange}
             placeholderTextColor="rgba(0, 0, 0, 0.5)"
           />
           <InputHalf
             placeholder="KM"
             value={carKM}
-            onChangeText={setCarKM}
+            onChangeText={handleKMChange}
             keyboardType="decimal-pad"
             placeholderTextColor="rgba(0, 0, 0, 0.5)"
           />
