@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions, TouchableOpacity, Text, View, Modal, SafeAreaView as RNSafeAreaView, Platform, StatusBar as RNStatusBar } from 'react-native';
+import { Dimensions, TouchableOpacity, Text, View, Modal, SafeAreaView as RNSafeAreaView, Platform, StatusBar as RNStatusBar, KeyboardAvoidingView } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -119,105 +119,113 @@ const handleYearChange = (text: string) => {
 };
 
 return (
-  <RNSafeAreaView style={{ flex: 1, backgroundColor: '#fff', paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0 }}>
-    <Container>
-      <TopBar>
-        <BackButton onPress={() => navigation.navigate('Main', { screen: 'CarSearch' })}>
-          <Ionicons name="arrow-back" size={26} color="#fff" />
-        </BackButton>
-      </TopBar>
-      <Content>
-        <Title>Adicionar novo carro</Title>
-        <InputFull
-          placeholder="Marca do carro"
-          value={carBrand}
-          onChangeText={setCarBrand}
-          placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        />
-        <Row>
-          <InputHalf
-            placeholder="Ano"
-            value={carYear}
-            onChangeText={handleYearChange}
-            keyboardType="number-pad"
-            placeholderTextColor="rgba(0, 0, 0, 0.5)"
-          />
-          <InputHalf
-            placeholder="Modelo"
-            value={carModel}
-            onChangeText={setCarModel}
-            placeholderTextColor="rgba(0, 0, 0, 0.5)"
-          />
-        </Row>
-        <Row>
-          <InputHalf
-            placeholder="Cor"
-            value={carColor}
-            onChangeText={setCarColor}
-            placeholderTextColor="rgba(0, 0, 0, 0.5)"
-          />
-          <InputHalf
-            placeholder="Placa"
-            value={carPlate}
-            onChangeText={setCarPlate}
-            placeholderTextColor="rgba(0, 0, 0, 0.5)"
-          />
-        </Row>
-        <Row>
-          <InputHalf
-            placeholder="Renavam"
-            value={carRenavam}
-            onChangeText={handleRenavamChange}
-            placeholderTextColor="rgba(0, 0, 0, 0.5)"
-          />
-          <InputHalf
-            placeholder="KM"
-            value={carKM}
-            onChangeText={handleKMChange}
-            keyboardType="decimal-pad"
-            placeholderTextColor="rgba(0, 0, 0, 0.5)"
-          />
-        </Row>
-        <Search>
-          <InputOwner
-            placeholder="Cliente"
-            placeholderTextColor="rgba(0, 0, 0, 0.5)"
-            value={carOwnerName}
-            editable={false}
-            onChangeText={setCarOwnerName}
-          />
-          <SearchButton onPress={fetchClientes}>
-            <Ionicons name="search" size={20} color="#000" />
-          </SearchButton>
-        </Search>
-        <Modal visible={showClientList} transparent animationType="fade">
-          <ModalOverlay onPress={() => setShowClientList(false)} />
-          <ModalContent>
+  <>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior="padding"
+      keyboardVerticalOffset={48}
+    >
+      <RNSafeAreaView style={{ flex: 1, backgroundColor: '#fff', paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0 }}>
+        <Container>
+          <TopBar>
+            <BackButton onPress={() => navigation.navigate('Main', { screen: 'CarSearch' })}>
+              <Ionicons name="arrow-back" size={26} color="#fff" />
+            </BackButton>
+          </TopBar>
+          <Content>
+            <Title>Adicionar novo carro</Title>
             <InputFull
-              placeholder="Buscar cliente pelo nome..."
-              value={searchText}
-              onChangeText={setSearchText}
+              placeholder="Marca do carro"
+              value={carBrand}
+              onChangeText={setCarBrand}
               placeholderTextColor="rgba(0, 0, 0, 0.5)"
             />
-            {filteredClientes.map((cliente: any, index) => (
-              <ClientItem
-                key={index}
-                onPress={() => selectCliente(cliente.idusuario, cliente.nome)}
-              >
-                <ClientText>{cliente.nome}</ClientText>
-              </ClientItem>
-            ))}
-          </ModalContent>
-        </Modal>
-      </Content>
-      <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#000' }}>
-        <BottomBar onPress={handleRegister}>
-          <ButtonText>Adicionar</ButtonText>
-        </BottomBar>
-      </SafeAreaView>
-      <StatusBar style="auto" />
-    </Container>
-  </RNSafeAreaView>
+            <Row>
+              <InputHalf
+                placeholder="Ano"
+                value={carYear}
+                onChangeText={handleYearChange}
+                keyboardType="number-pad"
+                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+              />
+              <InputHalf
+                placeholder="Modelo"
+                value={carModel}
+                onChangeText={setCarModel}
+                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+              />
+            </Row>
+            <Row>
+              <InputHalf
+                placeholder="Cor"
+                value={carColor}
+                onChangeText={setCarColor}
+                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+              />
+              <InputHalf
+                placeholder="Placa"
+                value={carPlate}
+                onChangeText={setCarPlate}
+                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+              />
+            </Row>
+            <Row>
+              <InputHalf
+                placeholder="Renavam"
+                value={carRenavam}
+                onChangeText={handleRenavamChange}
+                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+              />
+              <InputHalf
+                placeholder="KM"
+                value={carKM}
+                onChangeText={handleKMChange}
+                keyboardType="decimal-pad"
+                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+              />
+            </Row>
+            <Search>
+              <InputOwner
+                placeholder="Cliente"
+                placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                value={carOwnerName}
+                editable={false}
+                onChangeText={setCarOwnerName}
+              />
+              <SearchButton onPress={fetchClientes}>
+                <Ionicons name="search" size={20} color="#000" />
+              </SearchButton>
+            </Search>
+            <Modal visible={showClientList} transparent animationType="fade">
+              <ModalOverlay onPress={() => setShowClientList(false)} />
+              <ModalContent>
+                <InputFull
+                  placeholder="Buscar cliente pelo nome..."
+                  value={searchText}
+                  onChangeText={setSearchText}
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                />
+                {filteredClientes.map((cliente: any, index) => (
+                  <ClientItem
+                    key={index}
+                    onPress={() => selectCliente(cliente.idusuario, cliente.nome)}
+                  >
+                    <ClientText>{cliente.nome}</ClientText>
+                  </ClientItem>
+                ))}
+              </ModalContent>
+            </Modal>
+          </Content>
+          <StatusBar style="auto" />
+        </Container>
+      </RNSafeAreaView>
+    </KeyboardAvoidingView>
+    <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#000' }}>
+      <BottomBar onPress={handleRegister}>
+        <ButtonText>Adicionar</ButtonText>
+      </BottomBar>
+    </SafeAreaView>
+  </>
 );
   }
   
