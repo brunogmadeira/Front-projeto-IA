@@ -13,7 +13,6 @@ type Props = {
   onClose: () => void;
 };
 
-// Use o DrawerParamList importado
 type SidebarNavigationProp = DrawerNavigationProp<DrawerParamList>;
 
 const Sidebar = ({ isOpen, onClose }: Props) => {

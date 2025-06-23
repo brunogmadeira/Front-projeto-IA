@@ -30,7 +30,7 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.item} onPress={() => props.navigation.navigate('Profile')}>
-        <Text style={styles.itemText}>Configurações</Text>
+        <Text style={styles.itemText}>Perfil</Text>
       </TouchableOpacity>
     </View>
   );

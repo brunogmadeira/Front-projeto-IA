@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Dimensions, SafeAreaView, Platform, StatusBar as RNStatusBar } from 'react-native';
+import { Dimensions, SafeAreaView, Platform, StatusBar as RNStatusBar, ScrollView } from 'react-native';
 import styled from 'styled-components/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -13,15 +13,21 @@ export default function Profile() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [idUser, setIdUser] =  useState<string | null>(null);
+  const [cpf, setCpf] = useState('');
+  const [carrosEmServico, setCarrosEmServico] = useState<any[]>([]);
   const navigationDrawer = useNavigation<DrawerNavigationProp<any>>();
-
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
         const idUser = await AsyncStorage.getItem('userId');
+
+        if (!idUser || !token) {
+          console.error('Usuário não autenticado');
+          return;
+        }
+
         const response = await axios.get(`https://back-projeto-ia-production.up.railway.app/api/carro/getuser/${idUser}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -33,19 +39,46 @@ export default function Profile() {
         setName(user.nome);
         setEmail(user.email);
         setPhone(user.telefone_celular);
+        setCpf(user.cpf_cnpj || 'Não informado');
+
+        const carsResponse = await axios.get(`https://back-projeto-ia-production.up.railway.app/api/carro/getall/bycliente/${idUser}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const cars = carsResponse.data;
+        const carsWithService = [];
+
+        if (cars && cars.length > 0) {
+          for (const car of cars) {
+            const servicesResponse = await axios.get(`https://back-projeto-ia-production.up.railway.app/api/servico/getbycar/${car.id}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            const services = servicesResponse.data;
+            const orcamento = services.find((s: any) => s.status !== 'Finalizado');
+
+            if (orcamento) {
+              carsWithService.push({
+                placa: car.placa,
+                modelo: car.modelo,
+                ano: car.ano,
+                descricao_orcamento: orcamento.info || 'Descrição não disponível',
+              });
+            }
+          }
+        }
+        setCarrosEmServico(carsWithService);
 
       } catch (error) {
         console.error('Erro ao buscar dados do usuário:', error);
       }
     };
-    const funcao = async () => {
-      setIdUser(idUser);
-    }
 
-      funcao();
-      fetchUserData();
-
-    }, []);
+    fetchUserData();
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff', paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0 }}>
@@ -55,15 +88,32 @@ export default function Profile() {
             <Ionicons name="menu" size={26} color="#fff" />
           </MenuButton>
         </TopBar>
-        <Content>
-          <Avatar />
+        <ScrollView contentContainerStyle={{ alignItems: 'center', paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+
+          <AvatarContainer>
+            <Ionicons name="person" size={width * 0.2} color="#fff" />
+          </AvatarContainer>
+
           <UserName>{name}</UserName>
           <UserEmail>{email}</UserEmail>
           <UserPhone>{phone}</UserPhone>
-        </Content>
-        <EditButton>
-          <EditButtonText>Editar informações</EditButtonText>
-        </EditButton>
+          <UserCPF>CPF/CNPJ: {cpf}</UserCPF>
+
+          {carrosEmServico.length > 0 ? (
+            carrosEmServico.map((carro, index) => (
+              <CarInfoCard key={index}>
+                <CarInfoText>Placa: {carro.placa}</CarInfoText>
+                <CarInfoText>Modelo: {carro.modelo}</CarInfoText>
+                <CarInfoText>Ano: {carro.ano}</CarInfoText>
+                <CarInfoText>Orçamento: {carro.descricao_orcamento}</CarInfoText>
+              </CarInfoCard>
+            ))
+          ) : (
+            <CarInfoCard>
+              <NoCarText>Nenhum carro em serviço</NoCarText>
+            </CarInfoCard>
+          )}
+        </ScrollView>
       </Container>
     </SafeAreaView>
   );
@@ -88,17 +138,14 @@ const MenuButton = styled.TouchableOpacity`
   padding-left: 10px;
 `;
 
-const Content = styled.View`
-  margin-top: ${height * 0.15}px;
-  align-items: center;
-  width: 100%;
-`;
-
-const Avatar = styled.View`
+const AvatarContainer = styled.View`
   width: ${width * 0.4}px;
   height: ${width * 0.4}px;
-  background-color: #ccc;
   border-radius: ${width * 0.2}px;
+  background-color: #ccc;
+  justify-content: center;
+  align-items: center;
+  margin-top: ${height * 0.05}px;
   margin-bottom: 20px;
 `;
 
@@ -119,16 +166,28 @@ const UserPhone = styled.Text`
   margin-bottom: 10px;
 `;
 
-const EditButton = styled.TouchableOpacity`
-  width: 100%;
-  background-color: #000;
-  padding: 20px;
-  align-items: center;
+const UserCPF = styled.Text`
+  font-size: 16px;
+  margin-bottom: 20px;
 `;
 
-const EditButtonText = styled.Text`
-    color: #fff;
-    font-size: ${width * 0.07}px;
-    positions: center;
-    font-weight : bold;
+const CarInfoCard = styled.View`
+  width: 350px;
+  border: 1px solid #000;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 8px;
+  justify-content: center;
+  align-self: center;
+`;
+
+const CarInfoText = styled.Text`
+  font-size: 16px;
+  margin-bottom: 5px;
+`;
+
+const NoCarText = styled.Text`
+  font-size: 16px;
+  text-align: center;
+  color: #888;
 `;
