@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Dimensions, StyleSheet, Text, View, ScrollView, Platform, StatusBar as RNStatusBar } from 'react-native';
+import { Dimensions, StyleSheet, Text, View, ScrollView, Platform, StatusBar as RNStatusBar, Modal, Alert, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -21,6 +21,8 @@ export default function CarSearch() {
   const [tipoUsuario, setTipoUsuario] = useState<string | null>(null);
   const navigation = useNavigation<NavigationProp>();
   const navigationDrawer = useNavigation<DrawerNavigationProp<any>>();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedCar, setSelectedCar] = useState<any>(null);
   
 
     useEffect(() => {
@@ -81,8 +83,47 @@ export default function CarSearch() {
   };
   
 
-  const handCarPress = (carroId: number, iduser: number) => {
-    navigation.navigate('CarProgress', { idcar: carroId, iduser });
+  const handCarPress = (carro: any) => {
+    if (String(tipoUsuario) === '1') {
+      setSelectedCar(carro);
+      setModalVisible(true);
+    } else {
+      navigation.navigate('CarProgress', { idcar: carro.id, iduser: carro.iduser });
+    }
+  };
+
+  const handleEditCar = () => {
+    setModalVisible(false);
+    navigation.navigate('CarRegister', { car: selectedCar });
+  };
+
+  const handleRemoveCar = async () => {
+    setModalVisible(false);
+    Alert.alert(
+      'Remover carro',
+      'Tem certeza que deseja remover este carro?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Remover', style: 'destructive', onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem('userToken');
+              await axios.delete(`https://back-projeto-ia-production.up.railway.app/api/carro/delcar/${selectedCar.id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              onClienteSearchPress();
+            } catch (error) {
+              Alert.alert('Erro ao remover carro');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleOrcamentos = () => {
+    setModalVisible(false);
+    navigation.navigate('CarProgress', { idcar: selectedCar.id, iduser: selectedCar.iduser });
   };
 
   return (
@@ -121,7 +162,7 @@ export default function CarSearch() {
 
             <CarList>
               {carros.map((carro: any) => (
-                <CarItem key={carro.id} onPress={() => handCarPress(carro.id, carro.iduser)}>
+                <CarItem key={carro.id} onPress={() => handCarPress(carro)}>
                   <CarTitle>{carro.marca} - {carro.modelo} - {carro.ano}</CarTitle>
                   <CarPlate>Placa: {carro.placa}</CarPlate>
                 </CarItem>
@@ -130,6 +171,34 @@ export default function CarSearch() {
           </StartScreen>
         </ScrollView>
       </ContentContainer>
+
+      {/* Modal de opções do carro - apenas para admin */}
+      {String(tipoUsuario) === '1' && (
+        <Modal
+          visible={modalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ backgroundColor: '#fff', borderRadius: 10, padding: 24, width: '80%', alignItems: 'center' }}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 20 }}>Opções do carro</Text>
+              <TouchableOpacity style={{ marginBottom: 16, width: '100%' }} onPress={handleEditCar}>
+                <Text style={{ fontSize: 18, color: '#007bff', textAlign: 'center' }}>Editar carro</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ marginBottom: 16, width: '100%' }} onPress={handleRemoveCar}>
+                <Text style={{ fontSize: 18, color: '#ff4444', textAlign: 'center' }}>Remover carro</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ width: '100%' }} onPress={handleOrcamentos}>
+                <Text style={{ fontSize: 18, color: '#000', textAlign: 'center' }}>Orçamentos</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ marginTop: 24 }} onPress={() => setModalVisible(false)}>
+                <Text style={{ color: '#888', fontSize: 16 }}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </Container>
   );
 }

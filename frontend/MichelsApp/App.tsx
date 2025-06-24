@@ -12,9 +12,9 @@ import CarChanges from './Pages/CarChanges';
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
-  Main: { screen: keyof DrawerParamList } | undefined; // Modificação aqui
-  CarRegister: undefined;
-  CarProgress: { idcar: number, iduser: number }; // Add this line
+  Main: { screen: keyof DrawerParamList } | undefined;
+  CarRegister: { car?: any } | undefined;
+  CarProgress: { idcar: number, iduser: number };
   CarChanges: { idcar: number, iduser: number };
 };
 

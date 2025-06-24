@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { Dimensions, TouchableOpacity, Text, View, Modal, SafeAreaView as RNSafeAreaView, Platform, StatusBar as RNStatusBar, KeyboardAvoidingView } from 'react-native';
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import styled from 'styled-components/native';
@@ -13,16 +13,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
-export default function CarRegister() {
-    const [carBrand, setCarBrand] = useState('');
-    const [carModel, setCarModel] = useState('');
-    const [carYear, setCarYear] = useState('');
-    const [carColor, setCarColor] = useState('');
-    const [carPlate, setCarPlate] = useState('');
-    const [carRenavam, setCarRenavam] = useState('');
-    const [carKM, setCarKM] = useState('');
-    const [carOwnerId, setCarOwnerId] = useState('');
-    const [carOwnerName, setCarOwnerName] = useState('');
+export default function CarRegister(props: any) {
+    const route = useRoute();
+    const carToEdit = (route.params && (route.params as { car?: any }).car) || null;
+    const [carBrand, setCarBrand] = useState(carToEdit ? carToEdit.marca : '');
+    const [carModel, setCarModel] = useState(carToEdit ? carToEdit.modelo : '');
+    const [carYear, setCarYear] = useState(carToEdit ? String(carToEdit.ano) : '');
+    const [carColor, setCarColor] = useState(carToEdit ? carToEdit.cor : '');
+    const [carPlate, setCarPlate] = useState(carToEdit ? carToEdit.placa : '');
+    const [carRenavam, setCarRenavam] = useState(carToEdit ? carToEdit.renavam : '');
+    const [carKM, setCarKM] = useState(carToEdit ? carToEdit.km : '');
+    const [carOwnerId, setCarOwnerId] = useState(carToEdit ? carToEdit.iduser : '');
+    const [carOwnerName, setCarOwnerName] = useState(carToEdit ? carToEdit.nomeDono || '' : '');
     const [clientes, setClientes] = useState([]);
     const [showClientList, setShowClientList] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -33,317 +35,330 @@ export default function CarRegister() {
     
     const navigation = useNavigation<NavigationProp>();
 
-    const novoCarro = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.post(`https://back-projeto-ia-production.up.railway.app/api/carro/newcar`, {
-        modelo: carModel,
-        ano: carYear,     
-        marca: carBrand,
-        placa : carPlate,
-        iduser: carOwnerId,
-        cor: carColor,
-        renavam: carRenavam,
-        km: carKM,
-      },
-      {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      });
-
-      console.log(response.request)
- 
-      if (response.status === 200 ){
-        console.log('Cadastro realizado com sucesso');
-      navigation.navigate('Main', { screen: 'CarSearch' });
-      } else {
-        console.log('Erro');
+    const salvarCarro = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (carToEdit) {
+          const response = await axios.put(`https://back-projeto-ia-production.up.railway.app/api/carro/attcar`, {
+            id: carToEdit.id,
+            iduser: carOwnerId,
+            modelo: carModel,
+            ano: carYear,
+            marca: carBrand,
+            placa: carPlate,
+            renavam: carRenavam,
+            cor: carColor,
+            km: carKM,
+          }, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.status === 200) {
+            navigation.navigate('Main', { screen: 'CarSearch' });
+          } else {
+            window.alert('Erro ao editar carro');
+          }
+        } else {
+          const response = await axios.post(`https://back-projeto-ia-production.up.railway.app/api/carro/newcar`, {
+            modelo: carModel,
+            ano: carYear,
+            marca: carBrand,
+            placa: carPlate,
+            iduser: carOwnerId,
+            cor: carColor,
+            renavam: carRenavam,
+            km: carKM,
+          }, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.status === 200) {
+            navigation.navigate('Main', { screen: 'CarSearch' });
+          } else {
+            window.alert('Erro ao cadastrar carro');
+          }
+        }
+      } catch (error) {
+        window.alert('Erro ao salvar carro');
       }
+    };
 
-    } catch (error: any) {
-      console.log('Erro ao cadastrar carro', error);
-    }
-  };
-
-  const fetchClientes = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.get('https://back-projeto-ia-production.up.railway.app/api/carro/getall/clients',
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    const fetchClientes = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const response = await axios.get('https://back-projeto-ia-production.up.railway.app/api/carro/getall/clients',
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+        setClientes(response.data);
+        setShowClientList(true);
+      } catch (error) {
+        console.log('Erro ao buscar clientes', error);
       }
-    );
-      setClientes(response.data);
       setShowClientList(true);
-    } catch (error) {
-      console.log('Erro ao buscar clientes', error);
-    }
-    setShowClientList(true);
+    };
+
+    const selectCliente = (clienteId: string, clienteNome: string) => {
+      setCarOwnerId(clienteId);
+      setCarOwnerName(clienteNome);
+      setShowClientList(false);
+    };
+
+    const handleRegister = () => {
+      if (!carBrand || !carModel || !carPlate || !carColor || !carKM || !carRenavam || !carYear || !carOwnerId) {
+        window.alert('Informações faltantes');
+        return;
+      }
+      salvarCarro();
+    };
+
+    const filteredClientes = clientes.filter((cliente: any) =>
+    cliente.nome.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  // Funções de formatação
+  const handleKMChange = (text: string) => {
+    // Apenas números
+    setCarKM(text.replace(/\D/g, ''));
   };
 
-const selectCliente = (clienteId: string, clienteNome: string) => {
-  setCarOwnerId(clienteId);
-  setCarOwnerName(clienteNome);
-  setShowClientList(false);
-};
-
-  const handleRegister = () => {
-    if (!carBrand || !carModel || !carPlate || !carColor || !carKM || !carRenavam || !carYear || !carOwnerId) {
-      window.alert('Informações faltantes');
-      return; 
-    } 
-    novoCarro(); 
+  const handleRenavamChange = (text: string) => {
+    // Apenas números, máximo 11 dígitos
+    setCarRenavam(text.replace(/\D/g, '').slice(0, 11));
   };
 
-  const filteredClientes = clientes.filter((cliente: any) =>
-  cliente.nome.toLowerCase().includes(searchText.toLowerCase())
-);
+  const handleYearChange = (text: string) => {
+    // Apenas números, máximo 4 dígitos
+    setCarYear(text.replace(/\D/g, '').slice(0, 4));
+  };
 
-// Funções de formatação
-const handleKMChange = (text: string) => {
-  // Apenas números
-  setCarKM(text.replace(/\D/g, ''));
-};
-
-const handleRenavamChange = (text: string) => {
-  // Apenas números, máximo 11 dígitos
-  setCarRenavam(text.replace(/\D/g, '').slice(0, 11));
-};
-
-const handleYearChange = (text: string) => {
-  // Apenas números, máximo 4 dígitos
-  setCarYear(text.replace(/\D/g, '').slice(0, 4));
-};
-
-return (
-  <>
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior="padding"
-      keyboardVerticalOffset={48}
-    >
-      <RNSafeAreaView style={{ flex: 1, backgroundColor: '#fff', paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0 }}>
-        <Container>
-          <TopBar>
-            <BackButton onPress={() => navigation.navigate('Main', { screen: 'CarSearch' })}>
-              <Ionicons name="arrow-back" size={26} color="#fff" />
-            </BackButton>
-          </TopBar>
-          <Content>
-            <Title>Adicionar novo carro</Title>
-            <InputFull
-              placeholder="Marca do carro"
-              value={carBrand}
-              onChangeText={setCarBrand}
-              placeholderTextColor="rgba(0, 0, 0, 0.5)"
-            />
-            <Row>
-              <InputHalf
-                placeholder="Ano"
-                value={carYear}
-                onChangeText={handleYearChange}
-                keyboardType="number-pad"
+  return (
+    <>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+        keyboardVerticalOffset={48}
+      >
+        <RNSafeAreaView style={{ flex: 1, backgroundColor: '#fff', paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 0) : 0 }}>
+          <Container>
+            <TopBar>
+              <BackButton onPress={() => navigation.navigate('Main', { screen: 'CarSearch' })}>
+                <Ionicons name="arrow-back" size={26} color="#fff" />
+              </BackButton>
+            </TopBar>
+            <Content>
+              <Title>Adicionar novo carro</Title>
+              <InputFull
+                placeholder="Marca do carro"
+                value={carBrand}
+                onChangeText={setCarBrand}
                 placeholderTextColor="rgba(0, 0, 0, 0.5)"
               />
-              <InputHalf
-                placeholder="Modelo"
-                value={carModel}
-                onChangeText={setCarModel}
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-              />
-            </Row>
-            <Row>
-              <InputHalf
-                placeholder="Cor"
-                value={carColor}
-                onChangeText={setCarColor}
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-              />
-              <InputHalf
-                placeholder="Placa"
-                value={carPlate}
-                onChangeText={setCarPlate}
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-              />
-            </Row>
-            <Row>
-              <InputHalf
-                placeholder="Renavam"
-                value={carRenavam}
-                onChangeText={handleRenavamChange}
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-              />
-              <InputHalf
-                placeholder="KM"
-                value={carKM}
-                onChangeText={handleKMChange}
-                keyboardType="decimal-pad"
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-              />
-            </Row>
-            <Search>
-              <InputOwner
-                placeholder="Cliente"
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                value={carOwnerName}
-                editable={false}
-                onChangeText={setCarOwnerName}
-              />
-              <SearchButton onPress={fetchClientes}>
-                <Ionicons name="search" size={20} color="#000" />
-              </SearchButton>
-            </Search>
-            <Modal visible={showClientList} transparent animationType="fade">
-              <ModalOverlay onPress={() => setShowClientList(false)} />
-              <ModalContent>
-                <InputFull
-                  placeholder="Buscar cliente pelo nome..."
-                  value={searchText}
-                  onChangeText={setSearchText}
+              <Row>
+                <InputHalf
+                  placeholder="Ano"
+                  value={carYear}
+                  onChangeText={handleYearChange}
+                  keyboardType="number-pad"
                   placeholderTextColor="rgba(0, 0, 0, 0.5)"
                 />
-                {filteredClientes.map((cliente: any, index) => (
-                  <ClientItem
-                    key={index}
-                    onPress={() => selectCliente(cliente.idusuario, cliente.nome)}
-                  >
-                    <ClientText>{cliente.nome}</ClientText>
-                  </ClientItem>
-                ))}
-              </ModalContent>
-            </Modal>
-          </Content>
-          <StatusBar style="auto" />
-        </Container>
-      </RNSafeAreaView>
-    </KeyboardAvoidingView>
-    <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#000' }}>
-      <BottomBar onPress={handleRegister}>
-        <ButtonText>Adicionar</ButtonText>
-      </BottomBar>
-    </SafeAreaView>
-  </>
-);
-  }
-  
-  const Container = styled.View`
-    flex: 1;
-    background-color: #fff;
-    width: 100%;
-    height: 100%;
-  `;
-  
-  const Content = styled.View`
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    width: 100%;
-  `;
-  
-  const Title = styled.Text`
-    font-size: ${width * 0.08}px;
-    margin-bottom: ${height * 0.02}px;
-    font-weight: bold;
-  `;
+                <InputHalf
+                  placeholder="Modelo"
+                  value={carModel}
+                  onChangeText={setCarModel}
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                />
+              </Row>
+              <Row>
+                <InputHalf
+                  placeholder="Cor"
+                  value={carColor}
+                  onChangeText={setCarColor}
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                />
+                <InputHalf
+                  placeholder="Placa"
+                  value={carPlate}
+                  onChangeText={setCarPlate}
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                />
+              </Row>
+              <Row>
+                <InputHalf
+                  placeholder="Renavam"
+                  value={carRenavam}
+                  onChangeText={handleRenavamChange}
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                />
+                <InputHalf
+                  placeholder="KM"
+                  value={carKM}
+                  onChangeText={handleKMChange}
+                  keyboardType="decimal-pad"
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                />
+              </Row>
+              <Search>
+                <InputOwner
+                  placeholder="Cliente"
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                  value={carOwnerName}
+                  editable={false}
+                  onChangeText={setCarOwnerName}
+                />
+                <SearchButton onPress={fetchClientes}>
+                  <Ionicons name="search" size={20} color="#000" />
+                </SearchButton>
+              </Search>
+              <Modal visible={showClientList} transparent animationType="fade">
+                <ModalOverlay onPress={() => setShowClientList(false)} />
+                <ModalContent>
+                  <InputFull
+                    placeholder="Buscar cliente pelo nome..."
+                    value={searchText}
+                    onChangeText={setSearchText}
+                    placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                  />
+                  {filteredClientes.map((cliente: any, index) => (
+                    <ClientItem
+                      key={index}
+                      onPress={() => selectCliente(cliente.idusuario, cliente.nome)}
+                    >
+                      <ClientText>{cliente.nome}</ClientText>
+                    </ClientItem>
+                  ))}
+                </ModalContent>
+              </Modal>
+            </Content>
+            <StatusBar style="auto" />
+          </Container>
+        </RNSafeAreaView>
+      </KeyboardAvoidingView>
+      <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#000' }}>
+        <BottomBar onPress={handleRegister}>
+          <ButtonText>{carToEdit ? 'Salvar alterações' : 'Adicionar'}</ButtonText>
+        </BottomBar>
+      </SafeAreaView>
+    </>
+  );
+}
 
-  const ButtonText = styled.Text`
-    color: #fff;
-    font-size: ${width * 0.07}px;
-    text-align: center;
-    font-weight: bold;
-  `;
+const Container = styled.View`
+  flex: 1;
+  background-color: #fff;
+  width: 100%;
+  height: 100%;
+`;
 
-  const BottomBar = styled.TouchableOpacity`
-    width: 100%;
-    height: 56px;
-    background-color: #000;
-    justify-content: center;
-    align-items: center;
-  `;
+const Content = styled.View`
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  width: 100%;
+`;
 
-  const TopBar = styled.View`
-    width: 100%;
-    height: 48px;
-    background-color: #000;
-    flex-direction: row;
-    align-items: center;
-    padding-left: 10px;
-  `;
+const Title = styled.Text`
+  font-size: ${width * 0.08}px;
+  margin-bottom: ${height * 0.02}px;
+  font-weight: bold;
+`;
 
-  const BackButton = styled.TouchableOpacity``;
+const ButtonText = styled.Text`
+  color: #fff;
+  font-size: ${width * 0.07}px;
+  text-align: center;
+  font-weight: bold;
+`;
 
-  const Row = styled.View`
-    flex-direction: row;
-    justify-content: space-between;
-    width: 100%;
-    margin-bottom: ${height * 0.02}px;
-  `;
+const BottomBar = styled.TouchableOpacity`
+  width: 100%;
+  height: 56px;
+  background-color: #000;
+  justify-content: center;
+  align-items: center;
+`;
 
-  const InputFull = styled.TextInput`
-    height: ${height * 0.06}px;
-    border: 2px solid #000;
-    margin-bottom: ${height * 0.02}px;
-    padding: 0 10px;
-    width: 100%;
-    border-radius: 5px;
-  `;
+const TopBar = styled.View`
+  width: 100%;
+  height: 48px;
+  background-color: #000;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 10px;
+`;
 
-  const InputHalf = styled.TextInput`
-    height: ${height * 0.06}px;
-    border: 2px solid #000;
-    padding: 0 10px;
-    width: 48%;
-    border-radius: 5px;
-  `;
+const BackButton = styled.TouchableOpacity``;
 
-  const Search = styled.View`
-    flex-direction: row;
-    align-items: center;
-    height: ${height * 0.06}px;
-    border: 2px solid #000;
-    margin-bottom: ${height * 0.02}px;
-    padding: 0 10px;
-    width: 100%;
-    border-radius: 5px;
-    background-color: #fff;
-  `;
+const Row = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: ${height * 0.02}px;
+`;
 
-  const InputOwner = styled.TextInput`
-    flex: 1;
-    font-size: 16px;
-    color: #000;
-  `;
+const InputFull = styled.TextInput`
+  height: ${height * 0.06}px;
+  border: 2px solid #000;
+  margin-bottom: ${height * 0.02}px;
+  padding: 0 10px;
+  width: 100%;
+  border-radius: 5px;
+`;
 
-  const SearchButton = styled.TouchableOpacity`
-    padding-left: 10px;
-  `;
+const InputHalf = styled.TextInput`
+  height: ${height * 0.06}px;
+  border: 2px solid #000;
+  padding: 0 10px;
+  width: 48%;
+  border-radius: 5px;
+`;
 
-  const ModalOverlay = styled.TouchableOpacity`
-    flex: 1;
-    background-color: rgba(0, 0, 0, 0.5);
-  `;
+const Search = styled.View`
+  flex-direction: row;
+  align-items: center;
+  height: ${height * 0.06}px;
+  border: 2px solid #000;
+  margin-bottom: ${height * 0.02}px;
+  padding: 0 10px;
+  width: 100%;
+  border-radius: 5px;
+  background-color: #fff;
+`;
 
-  const ModalContent = styled.View`
-    position: absolute;
-    top: 30%;
-    left: 10%;
-    right: 10%;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    elevation: 5;
-  `;
+const InputOwner = styled.TextInput`
+  flex: 1;
+  font-size: 16px;
+  color: #000;
+`;
 
-  const ClientItem = styled.TouchableOpacity`
-    padding: 12px;
-    border-bottom-width: 1px;
-    border-bottom-color: #ccc;
-  `;
+const SearchButton = styled.TouchableOpacity`
+  padding-left: 10px;
+`;
 
-  const ClientText = styled.Text`
-    font-size: 16px;
-  `;
+const ModalOverlay = styled.TouchableOpacity`
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+`;
+
+const ModalContent = styled.View`
+  position: absolute;
+  top: 30%;
+  left: 10%;
+  right: 10%;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  elevation: 5;
+`;
+
+const ClientItem = styled.TouchableOpacity`
+  padding: 12px;
+  border-bottom-width: 1px;
+  border-bottom-color: #ccc;
+`;
+
+const ClientText = styled.Text`
+  font-size: 16px;
+`;
