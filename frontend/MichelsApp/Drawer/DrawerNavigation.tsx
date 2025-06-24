@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { createDrawerNavigator, DrawerContentComponentProps } from '@react-navigation/drawer';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Chatbot from '../Pages/ChatbotPage';
 import CarSearch from '../Pages/CarSearchPage';
 import Profile from '../Pages/ProfilePage';
@@ -14,11 +16,39 @@ export type DrawerParamList = {
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
 function CustomDrawerContent(props: DrawerContentComponentProps) {
+  const handleLogout = async () => {
+    Alert.alert(
+      'Sair',
+      'Tem certeza que deseja sair da sua conta?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await AsyncStorage.multiRemove(['userToken', 'userId', 'userTipo']);
+              props.navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' as any }],
+              });
+            } catch (error) {
+              console.error('Erro ao fazer logout:', error);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Image source={require('../assets/michelslogocorrigido.jpeg')} style={styles.logo} />
-        <Text style={styles.username}>Usuário</Text>
+        <Text style={styles.username}>MichelsApp</Text>
       </View>
 
       <TouchableOpacity style={styles.item} onPress={() => props.navigation.navigate('Chatbot')}>
@@ -31,6 +61,10 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 
       <TouchableOpacity style={styles.item} onPress={() => props.navigation.navigate('Profile')}>
         <Text style={styles.itemText}>Perfil</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.logoutItem} onPress={handleLogout}>
+        <Ionicons name="log-out-outline" size={32} color="#ff6b6b" style={styles.logoutIcon} />
       </TouchableOpacity>
     </View>
   );
@@ -56,6 +90,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     paddingTop: 40,
     paddingHorizontal: 20,
+    paddingBottom: 50,
   },
   header: {
     flexDirection: 'row',     
@@ -71,7 +106,7 @@ const styles = StyleSheet.create({
   },
   username: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 22,
     marginLeft: 10,
 
   },
@@ -88,5 +123,16 @@ const styles = StyleSheet.create({
   itemText: {
     color: '#fff',
     fontSize: 16,
+  },
+  logoutItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 12,
+    marginTop: 'auto',
+    marginBottom: 20,
+    justifyContent: 'flex-start',
+  },
+  logoutIcon: {
+    alignContent : 'flex-start'
   },
 });
